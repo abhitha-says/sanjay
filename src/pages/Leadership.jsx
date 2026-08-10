@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion'
 import leadershipHero from '../assets/leadership-hero.png'
 import cscmpNewsletter from '../assets/gallery/cscmp-newsletter-launch-2011.jpg'
@@ -277,12 +277,7 @@ function LeadershipHero() {
             transition={{ duration: 0.9, delay: 0.1, ease }}
             className="mb-6 mt-20 md:mt-24"
           >
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 font-sans text-[13px] text-secondary transition-colors hover:text-ink"
-            >
-              <span aria-hidden="true">←</span> Back home
-            </Link>
+            <BackHomeBtn />
           </motion.div>
 
           {/* Index */}
@@ -697,6 +692,20 @@ function SectionLabel({ eyebrow, title, description }) {
         <p className="mt-3 max-w-[480px] font-sans text-[15px] leading-[26px] text-secondary">{description}</p>
       )}
     </motion.div>
+  )
+}
+
+// ── Back-home button (transition-aware) ───────────────────────────────────────
+function BackHomeBtn() {
+  const go = useTransitionNavigate()
+  return (
+    <button
+      onClick={() => go('/')}
+      className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[13px] text-secondary transition-colors hover:text-ink"
+      aria-label="Back home"
+    >
+      <span aria-hidden="true">←</span> Back home
+    </button>
   )
 }
 

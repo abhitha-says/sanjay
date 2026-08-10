@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
-import { Link, useLocation } from 'react-router-dom'
-
-const MotionLink = motion(Link)
+import { useLocation } from 'react-router-dom'
+import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
+import { useTransition } from '../context/TransitionContext'
 
 const items = [
   {
@@ -30,6 +30,8 @@ const ease = [0.22, 1, 0.36, 1]
 
 export default function Dock() {
   const { pathname } = useLocation()
+  const go = useTransitionNavigate()
+  const { isTransitioning } = useTransition()
 
   return (
     <motion.div
@@ -37,18 +39,21 @@ export default function Dock() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1.1, delay: 1.68, ease }}
       className="relative z-30 mx-4 mb-4 flex h-[140px] items-stretch overflow-hidden rounded-dock bg-glass shadow-soft backdrop-blur-[20px] md:mx-8 md:mb-8 lg:mx-14"
+      style={{ pointerEvents: isTransitioning ? 'none' : undefined }}
     >
-      <MotionLink
-        to="/discover-more"
+      {/* Discover more button */}
+      <motion.button
+        onClick={() => go('/discover-more')}
         whileHover={{ y: -3, scale: 1.02 }}
         transition={{ duration: 0.25, ease }}
-        className="flex w-[250px] shrink-0 items-center justify-between bg-ink px-8 font-sans text-white"
+        className="flex w-[250px] shrink-0 cursor-pointer items-center justify-between bg-ink px-8 font-sans text-white"
+        aria-label="Discover more"
       >
         <span className="text-[18px] font-medium">Discover more</span>
         <span className="relative top-[6px] ml-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-[17px]">
           &#8599;
         </span>
-      </MotionLink>
+      </motion.button>
 
       <div className="scrollbar-hide flex min-w-0 flex-1 items-center justify-between gap-[14px] overflow-x-auto px-6 py-[6px] lg:px-10">
         {items.map((item) => {
@@ -71,23 +76,25 @@ export default function Dock() {
                 >
                   {item.label}
                 </div>
-                <Link
-                  to={item.to}
-                  className="flex items-center gap-1 font-sans text-[14px] text-secondary transition-colors hover:text-ink"
+                <button
+                  onClick={() => go(item.to)}
+                  className="flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-[14px] text-secondary transition-colors hover:text-ink"
+                  aria-label={`Go to ${item.label}`}
                 >
                   View <span aria-hidden="true">&#8599;</span>
-                </Link>
+                </button>
               </div>
             </motion.div>
           )
         })}
 
-        <MotionLink
-          to="/discover-more"
+        {/* Grid dots — also routes through transition */}
+        <motion.button
+          onClick={() => go('/discover-more')}
           whileHover={{ y: -4, scale: 1.02 }}
           transition={{ duration: 0.25, ease }}
           aria-label="More"
-          className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-ink text-white"
+          className="flex h-[48px] w-[48px] shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-ink text-white"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <circle cx="2" cy="2" r="1.4" fill="#fff" />
@@ -100,8 +107,9 @@ export default function Dock() {
             <circle cx="7" cy="12" r="1.4" fill="#fff" />
             <circle cx="12" cy="12" r="1.4" fill="#fff" />
           </svg>
-        </MotionLink>
+        </motion.button>
       </div>
     </motion.div>
   )
 }
+

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTransitionNavigate } from '../hooks/useTransitionNavigate';
 import * as THREE from 'three';
 import { cn } from '@/lib/utils';
 
@@ -104,7 +104,7 @@ export function BooksShowcase({
   className,
   onBookSelect,
 }: BooksShowcaseProps) {
-  const navigate = useNavigate();
+  const navigate = useTransitionNavigate();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const openBtnRef = useRef<HTMLButtonElement | null>(null);
