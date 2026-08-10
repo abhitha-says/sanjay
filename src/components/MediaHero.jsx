@@ -67,7 +67,7 @@ function MediaImage() {
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { mx.set(0); my.set(0) }}
       // Identical positioning to HeroImage
-      className="relative h-[320px] w-full sm:h-[400px] md:absolute md:bottom-0 md:right-[-2%] md:z-10 md:h-[82%] md:w-[62%] md:translate-x-[20px] lg:right-[0%] lg:h-[100%] lg:w-[70%] lg:translate-x-[30px] lg:-translate-y-[10px]"
+      className="relative h-[320px] w-full sm:h-[400px] md:absolute md:bottom-0 md:right-[-3%] md:z-10 md:h-[82%] md:w-[65%] lg:right-[-3%] lg:h-[100%] lg:w-[74%] lg:-translate-y-[10px]"
     >
       <motion.div
         className="relative h-full w-full"
@@ -94,7 +94,7 @@ function MediaImage() {
             WebkitMaskRepeat: 'no-repeat',
             maskRepeat: 'no-repeat',
           }}
-          className="h-full w-full object-cover object-[62%_20%]"
+          className="h-full w-full object-cover object-[55%_18%]"
         />
       </motion.div>
 
@@ -142,7 +142,7 @@ export default function MediaHero({ index, title, accent, subtitle }) {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease }}
-            className="mb-8"
+            className="mb-6 mt-20 md:mt-24"
           >
             <Link
               to="/"

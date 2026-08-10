@@ -3,7 +3,7 @@ import Reveal from './Reveal'
 
 export default function PageHeader({ index, title, accent, subtitle }) {
   return (
-    <div className="px-6 pb-10 pt-8 md:px-14 md:pb-16 md:pt-6 lg:px-20">
+    <div className="px-6 pb-10 pt-20 md:px-14 md:pb-16 md:pt-24 lg:px-20">
       <Reveal>
         <Link
           to="/"
