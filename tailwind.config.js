@@ -14,7 +14,7 @@ export default {
       },
       fontFamily: {
         serif: ['"Cormorant Garamond"', 'Canela', 'serif'],
-        sans: ['Inter', 'sans-serif'],
+        sans: ['"DM Sans"', 'sans-serif'],
       },
       borderRadius: {
         hero: '40px',

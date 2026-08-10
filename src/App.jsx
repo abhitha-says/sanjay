@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Dock from './components/Dock'
+import ScrollToTop from './components/ScrollToTop'
 import Home from './pages/Home'
 import DiscoverMore from './pages/DiscoverMore'
 import Journey from './pages/Journey'
@@ -36,6 +37,7 @@ export default function App() {
           opacity: 0.018,
         }}
       />
+      <ScrollToTop />
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />

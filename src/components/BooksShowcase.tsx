@@ -677,7 +677,6 @@ export function BooksShowcase({
       spine: THREE.Mesh;
       block: THREE.Mesh;
       pages: THREE.Group[];
-      pageF: number[];
       pageTurn: Spring[];
       pageCount: number;
       pageIndex: number;
@@ -771,22 +770,36 @@ export function BooksShowcase({
 
       const pageCount = Math.min(PAGE_N, contentPages.length);
       const pages: THREE.Group[] = [],
-        pageF: number[] = [],
         pageTurn: Spring[] = [];
+      // A blank material shared by every page's reverse side, so a turned
+      // page shows plain paper on the left rather than mirrored content.
+      const blankBackMat = std({ color: 0xf2ecdd, roughness: 0.95, envMapIntensity: 0.2, side: THREE.FrontSide });
       for (let i = 0; i < PAGE_N; i++) {
         const pp = new THREE.Group();
         pp.position.set(-W / 2 + 0.01, (Math.random() - 0.5) * 0.006, 0.166 - i * 0.0042);
         const content = contentPages[i];
-        const mat = content
-          ? std({ map: makeContentPageTex(content, i + 1, pageCount), roughness: 0.92, envMapIntensity: 0.2, side: THREE.DoubleSide })
-          : pageMats[i % 3];
-        const pm = new THREE.Mesh(pageGeo, mat);
-        pm.position.x = PW / 2;
-        pm.rotation.z = (Math.random() - 0.5) * 0.006;
-        pp.add(pm);
+        const frontMat = content
+          ? std({
+              map: makeContentPageTex(content, i + 1, pageCount),
+              roughness: 0.92,
+              envMapIntensity: 0.2,
+              side: THREE.FrontSide,
+            })
+          : std({ color: [0xf4eee0, 0xf1ebdb, 0xf6f0e3][i % 3], roughness: 0.92, envMapIntensity: 0.22, side: THREE.FrontSide });
+        const pmFront = new THREE.Mesh(pageGeo, frontMat);
+        pmFront.position.x = PW / 2;
+        pmFront.rotation.z = (Math.random() - 0.5) * 0.006;
+        pp.add(pmFront);
+
+        const pmBack = new THREE.Mesh(pageGeo, blankBackMat);
+        pmBack.position.x = PW / 2;
+        pmBack.position.z = -0.0006;
+        pmBack.rotation.y = Math.PI;
+        pmBack.rotation.z = (Math.random() - 0.5) * 0.006;
+        pp.add(pmBack);
+
         float.add(pp);
         pages.push(pp);
-        pageF.push(0.3 * Math.pow(1 - i / PAGE_N, 2.6));
         pageTurn.push(new Spring(0, 10, 5.2));
       }
 
@@ -843,7 +856,6 @@ export function BooksShowcase({
         spine,
         block,
         pages,
-        pageF,
         pageTurn,
         pageCount,
         pageIndex: 0,
@@ -1139,17 +1151,26 @@ export function BooksShowcase({
     shiftCarouselRef.current = shiftCarousel;
 
     // Turns one page at a time from the unread (right) stack to the read
-    // (left) stack, revealing the next content page underneath.
+    // (left) stack, revealing the next content page underneath. Wraps
+    // around at either end instead of stopping, so the book reads as a
+    // continuous loop rather than dead-ending on an empty page.
     function turnPage(book: Book, dir: 1 | -1) {
       if (book.pageCount === 0) return;
       if (dir === 1) {
-        if (book.pageIndex >= book.pageCount) return;
         book.pageTurn[book.pageIndex].t = 1;
         book.pageIndex++;
+        if (book.pageIndex >= book.pageCount) {
+          book.pageIndex = 0;
+          book.pageTurn.forEach((s) => s.set(0));
+        }
       } else {
-        if (book.pageIndex <= 0) return;
         book.pageIndex--;
-        book.pageTurn[book.pageIndex].t = 0;
+        if (book.pageIndex < 0) {
+          book.pageIndex = book.pageCount - 1;
+          book.pageTurn.forEach((s, idx) => s.set(idx < book.pageCount - 1 ? 1 : 0));
+        } else {
+          book.pageTurn[book.pageIndex].t = 0;
+        }
       }
       setPageInfo({ index: book.pageIndex, total: book.pageCount });
     }
@@ -1392,6 +1413,7 @@ export function BooksShowcase({
     const onPointerUp = (e: PointerEvent) => {
       if (ptr.id !== null && e.pointerId !== ptr.id) return;
       ptr.id = null;
+      const wasOrbitDrag = orbit.drag;
       orbit.drag = false;
       if (dragBook) {
         const slop = isTouch() ? 26 : 14;
@@ -1400,6 +1422,17 @@ export function BooksShowcase({
         dragBook.springs.drag.t = 0;
         if (!wasDrag && state.mode === 'hero' && performance.now() - ptr.t0 < limit) open(dragBook);
         dragBook = null;
+      } else if (wasOrbitDrag && state.mode === 'detail' && state.selected) {
+        // Click (not drag) on the open book turns the page — tap the right
+        // half to advance, the left half to go back. This is the only way
+        // pages turn; there are no prev/next buttons.
+        const slop = isTouch() ? 26 : 14;
+        const wasClick = ptr.moved <= slop;
+        if (wasClick) {
+          const book = state.selected;
+          const edge = book.hitEdge ?? 0.5;
+          turnPage(book, edge < 0.5 ? -1 : 1);
+        }
       }
       ptr.down = false;
       if (isTouch()) rayBook = null;
@@ -1455,7 +1488,10 @@ export function BooksShowcase({
     const idle = RM ? 0 : 1;
     const DETAIL_OPEN_ANGLE = 0.88;
     const DETAIL_OPEN_SWAY = 0.035;
-    const PAGE_TURNED_ANGLE = -1.05;
+    // Turned (already-read) pages must rotate LESS than the front cover so
+    // they nest visibly between the spine and the cover instead of swinging
+    // past it and disappearing behind it from the camera's view.
+    const PAGE_TURNED_ANGLE = -0.58;
 
     function screenPos(b: Book) {
       b.root.getWorldPosition(tmpV).project(camera);
@@ -1570,11 +1606,30 @@ export function BooksShowcase({
       b.spine.rotation.y = -ang * 0.16 + angB * 0.16;
       b.block.scale.z = 1 - (ang + angB) * 0.05;
       b.block.position.z = BLOCK_Z - ang * 0.006 + angB * 0.006;
+      // Only the page currently being read should open — matching the cover
+      // so it reads as one flat, fully visible surface. Everything still
+      // ahead in the unread stack stays essentially closed (a faint peek on
+      // the very next sheet for physical depth, nothing beyond that) so the
+      // book never looks like a fanned deck of cards.
       for (let i = 0; i < PAGE_N; i++) {
+        // Pages past the real content (blank filler used to bulk out the
+        // block) must never be treated as "current" — otherwise looping
+        // or reaching the end of the book would swing an empty page wide
+        // open, which is exactly the blank-page problem this avoids.
+        let baseFan = 0;
+        if (i < b.pageCount) {
+          const rel = i - b.pageIndex;
+          baseFan = rel <= 0 ? 1.0 : Math.max(0.015, 0.16 * Math.pow(0.22, rel - 1));
+        }
         const fl = idle * Math.sin(t * 1.15 + b.phase + i * 0.6) * 0.006 * (1 - i / PAGE_N);
-        const fanAngle = -(ang * b.pageF[i] + Math.max(0, fl));
+        const fanAngle = -(ang * baseFan + Math.max(0, fl));
         const turned = b.pageTurn[i].update(dt);
         b.pages[i].rotation.y = fanAngle + (PAGE_TURNED_ANGLE - fanAngle) * turned;
+        // Swap to the blank reverse side partway through the flip, so a
+        // turned page reads as plain paper on the left, not mirrored content.
+        const [front, back] = b.pages[i].children;
+        if (front) front.visible = turned <= 0.5;
+        if (back) back.visible = turned > 0.5;
       }
       for (let i = 0; i < 6; i++) b.pagesB[i].rotation.y = angB * b.pageFB[i];
     }
@@ -1811,7 +1866,7 @@ export function BooksShowcase({
         'transition-colors duration-500 ease-out',
         uiMode === 'hero'
           ? 'bg-[var(--bs-bg-light)] text-[var(--bs-fg-light)] dark:bg-[var(--bs-bg-dark)] dark:text-[var(--bs-fg-dark)]'
-          : 'bg-[var(--bs-navy)] text-[var(--bs-cream)]',
+          : 'bg-transparent text-[var(--bs-cream)]',
         className,
       )}
       style={themeVars}
@@ -1910,28 +1965,13 @@ export function BooksShowcase({
           </h1>
 
           {pageInfo.total > 0 && (
-            <div className={`pointer-events-auto mt-3 flex items-center gap-3 ${dpChild(90)}`}>
-              <button
-                type="button"
-                aria-label="Previous page"
-                disabled={pageInfo.index === 0}
-                onClick={() => turnPageRef.current(-1)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--bs-lav)]/30 text-[var(--bs-cream)] transition-colors hover:border-[var(--bs-lav)]/70 disabled:opacity-25 disabled:pointer-events-none"
-              >
-                <ChevronLeft />
-              </button>
+            <div className={`mt-3 flex items-center gap-3 ${dpChild(90)}`}>
               <span className="text-[13px] tracking-[0.04em] text-[var(--bs-lav)]">
                 Page {pageInfo.index + 1} of {pageInfo.total}
               </span>
-              <button
-                type="button"
-                aria-label="Next page"
-                disabled={pageInfo.index >= pageInfo.total}
-                onClick={() => turnPageRef.current(1)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--bs-lav)]/30 text-[var(--bs-cream)] transition-colors hover:border-[var(--bs-lav)]/70 disabled:opacity-25 disabled:pointer-events-none"
-              >
-                <ChevronRight />
-              </button>
+              <span className="text-[12px] italic tracking-[0.02em] text-[var(--bs-lav)]/70">
+                Click the book to turn pages
+              </span>
             </div>
           )}
 
@@ -1943,7 +1983,7 @@ export function BooksShowcase({
               <div className="text-[17px] font-semibold text-[var(--bs-pink)]">{selectedCfg.tag}</div>
             )}
             <div className="h-6 w-px bg-[var(--bs-lav)]/[0.28]" />
-            <div className="ml-auto text-[19px] italic text-[#98a4d6]">{selectedCfg?.year}</div>
+            <div className="ml-auto text-[19px] italic text-[var(--bs-pink)]">{selectedCfg?.year}</div>
           </div>
           <div className={`mt-4 border-t border-[var(--bs-lav)]/[0.18] md:mt-[26px] ${dpChild(270)}`} />
           <div

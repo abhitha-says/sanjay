@@ -4,14 +4,14 @@ import { chapters } from '../data/chapters'
 
 const showcaseTheme = {
   navy: '#14201a',
-  pink: '#E45A49',
-  cream: '#F5F2ED',
-  lav: '#cfd8c9',
-  peri: '#4f9a5c',
-  bgLight: '#F5F2ED',
-  bgDark: '#14201a',
-  foregroundLight: '#111111',
-  foregroundDark: '#F5F2ED',
+  pink: '#2d7a3a',
+  cream: '#2d7a3a',
+  lav: '#2d7a3a',
+  peri: '#2d7a3a',
+  bgLight: 'transparent',
+  bgDark: 'transparent',
+  foregroundLight: '#2d7a3a',
+  foregroundDark: '#2d7a3a',
 }
 
 export default function Home() {
@@ -22,7 +22,7 @@ export default function Home() {
         <BooksShowcase
           books={chapters}
           heroTitle="Chapters"
-          navTitle="The Story, In Four Parts"
+          showNav={false}
           themeColors={showcaseTheme}
         />
       </section>
