@@ -40,12 +40,12 @@ const moments = [
 ]
 
 const languages = [
-  { name: 'Hindi',             level: 'Native or bilingual proficiency'    },
-  { name: 'English',           level: 'Full professional proficiency'      },
-  { name: 'Bengali',           level: 'Full professional proficiency'      },
-  { name: 'Marathi',           level: 'Professional working proficiency'   },
-  { name: 'Rajasthani',        level: 'Professional working proficiency'   },
-  { name: 'Bihari languages',  level: 'Elementary proficiency'             },
+  { name: 'Hindi',            level: 'Native or bilingual',   pct: 100, script: 'हिंदी'       },
+  { name: 'English',          level: 'Full professional',     pct: 95,  script: 'English'     },
+  { name: 'Bengali',          level: 'Full professional',     pct: 90,  script: 'বাংলা'        },
+  { name: 'Marathi',          level: 'Professional working',  pct: 75,  script: 'मराठी'       },
+  { name: 'Rajasthani',       level: 'Professional working',  pct: 70,  script: 'राजस्थानी'   },
+  { name: 'Bihari languages', level: 'Elementary',            pct: 40,  script: 'भोजपुरी'    },
 ]
 
 // ── Speaking topic pill ──────────────────────────────────────────────────────
@@ -150,10 +150,11 @@ function AwardCard() {
   )
 }
 
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function Media() {
   return (
-    <main className="relative z-20">
+    <main className="relative z-20 -mt-[72px]">
       <MediaHero
         index="05"
         title="Media &"
@@ -225,24 +226,24 @@ export default function Media() {
       </section>
 
       {/* ── Languages ── */}
-      <section className="border-t border-border px-6 py-16 md:px-14 md:py-20 lg:px-20">
+      <section className="border-t border-border px-6 py-12 md:px-14 lg:px-20">
         <Reveal>
-          <span className="font-sans text-[13px] font-semibold uppercase tracking-[0.14em] text-brand">Reach</span>
-          <h2 className="mt-2 mb-10 font-serif text-[clamp(28px,3.5vw,42px)] font-bold leading-tight text-ink">
+          <span className="font-sans text-[12px] font-semibold uppercase tracking-[0.18em] text-brand">Reach</span>
+          <h2 className="mt-2 mb-8 font-serif text-[clamp(24px,3vw,36px)] font-bold leading-tight text-ink">
             Languages
           </h2>
         </Reveal>
-        <div className="grid gap-x-16 gap-y-0 sm:grid-cols-2 lg:max-w-[860px]">
+        <div className="grid grid-cols-2 gap-x-12 gap-y-0 lg:max-w-[700px]">
           {languages.map((lang, i) => (
             <Reveal
               key={lang.name}
-              delay={Math.min(i * 0.05, 0.3)}
-              className="flex items-baseline justify-between border-b border-border py-4"
+              delay={Math.min(i * 0.05, 0.25)}
+              className="flex items-baseline justify-between border-b border-border py-3.5"
             >
-              <span className="font-serif text-[clamp(18px,2vw,22px)] font-semibold text-ink">
+              <span className="font-serif text-[clamp(16px,1.8vw,20px)] font-semibold text-ink">
                 {lang.name}
               </span>
-              <span className="text-right font-sans text-[13px] text-secondary">
+              <span className="ml-4 shrink-0 text-right font-sans text-[11px] font-medium uppercase tracking-[0.1em] text-secondary/70">
                 {lang.level}
               </span>
             </Reveal>

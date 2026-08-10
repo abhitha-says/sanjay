@@ -11,7 +11,6 @@ import {
   useSpring,
 } from 'framer-motion'
 import { BooksShowcase } from '../components/BooksShowcase'
-import HeroToManTransition from '../components/HeroToManTransition'
 
 // ─── Assets ───────────────────────────────────────────────────────────────────
 import portrait3Img    from '../assets/portrait-3.png'
@@ -331,12 +330,12 @@ function IdeasPerspectives() {
   return (
     <section className="border-t-2 border-border overflow-hidden">
       {/* Header */}
-      <div className="px-6 pt-28 pb-12 md:px-14 lg:px-20">
+      <div className="px-6 pt-36 pb-16 md:px-14 lg:px-20">
         <FadeUp className="mb-6 flex items-center gap-4">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent font-sans text-[11px] font-black text-white shrink-0">02</span>
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand font-sans text-[11px] font-black text-white shrink-0">02</span>
           <div>
-            <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.38em] text-accent/60">Chapter</div>
-            <div className="font-sans text-[13px] font-bold uppercase tracking-[0.18em] text-accent leading-tight">Ideas & Perspectives</div>
+            <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.38em] text-brand/60">Chapter</div>
+            <div className="font-sans text-[13px] font-bold uppercase tracking-[0.18em] text-brand leading-tight">Ideas & Perspectives</div>
           </div>
         </FadeUp>
         <StaggerWords
@@ -415,7 +414,7 @@ function PhotoArchive() {
 
   return (
     <>
-      <section className="border-t border-border px-6 py-24 md:px-14 lg:px-20">
+      <section className="border-t border-border px-6 py-32 md:px-14 lg:px-20">
         {/* Header */}
         <div className="mb-10">
           <FadeUp className="mb-6 flex items-center gap-4">
@@ -540,13 +539,13 @@ function LifeOfContribution() {
       {/* Strong left guard so left text column is always crisp */}
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-bg via-bg/85 to-transparent" />
 
-      <div className="relative px-6 py-36 md:px-14 lg:px-20" style={{ zIndex: 2 }}>
+      <div className="relative px-6 py-44 md:px-14 lg:px-20" style={{ zIndex: 2 }}>
         {/* Eyebrow */}
         <FadeUp className="mb-8 flex items-center gap-4">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-accent font-sans text-[11px] font-black text-white shrink-0">04</span>
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand font-sans text-[11px] font-black text-white shrink-0">04</span>
           <div>
-            <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.38em] text-accent/60">Chapter</div>
-            <div className="font-sans text-[13px] font-bold uppercase tracking-[0.18em] text-accent leading-tight">A Life of Contribution</div>
+            <div className="font-sans text-[10px] font-semibold uppercase tracking-[0.38em] text-brand/60">Chapter</div>
+            <div className="font-sans text-[13px] font-bold uppercase tracking-[0.18em] text-brand leading-tight">A Life of Contribution</div>
           </div>
         </FadeUp>
 
@@ -609,7 +608,7 @@ function ClosingCTA() {
   return (
     <>
       <ArchiveModal open={archiveOpen} onClose={() => setArchiveOpen(false)} />
-      <section ref={ref} className="relative overflow-hidden border-t border-border px-6 pb-36 pt-28 md:px-14 lg:px-20">
+      <section ref={ref} className="relative overflow-hidden border-t border-border px-6 pb-44 pt-40 md:px-14 lg:px-20">
       {/* Ghosted portrait parallax */}
       <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ y: bgY, opacity: bgOp }}>
         <img src={portrait3Img} alt="" className="absolute right-0 top-0 h-full w-1/2 object-cover object-center" />
@@ -751,8 +750,8 @@ function ArchiveModal({ open, onClose }) {
             >
               {/* Archive label */}
               <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 backdrop-blur-sm">
-                <div className="h-[2px] w-5 rounded-full bg-[#c8a96e]" />
-                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-[#c8a96e]/80">
+                <div className="h-[2px] w-5 rounded-full bg-brand" />
+                <span className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-brand/80">
                   The Archive
                 </span>
               </div>
@@ -926,15 +925,19 @@ export default function DiscoverMore() {
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           01 — THE MAN BEHIND THE WORK
-          Sticky scroll transition: hero portrait dims → brightens,
-          "The Man Behind the Work" content appears over it.
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <HeroToManTransition />
+      <ManBehindWork />
+
+      {/* Section gap */}
+      <div className="h-16 md:h-24" />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           02 — IDEAS & PERSPECTIVES
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <IdeasPerspectives />
+
+      {/* Section gap */}
+      <div className="h-16 md:h-24" />
 
       {/* Places, People & Moments section removed as requested */}
 
@@ -942,6 +945,9 @@ export default function DiscoverMore() {
           04 — A LIFE OF CONTRIBUTION
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <LifeOfContribution />
+
+      {/* Section gap */}
+      <div className="h-16 md:h-24" />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           CLOSING — THERE IS MORE TO EVERY JOURNEY

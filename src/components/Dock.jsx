@@ -87,27 +87,6 @@ export default function Dock() {
             </motion.div>
           )
         })}
-
-        {/* Grid dots — also routes through transition */}
-        <motion.button
-          onClick={() => go('/discover-more')}
-          whileHover={{ y: -4, scale: 1.02 }}
-          transition={{ duration: 0.25, ease }}
-          aria-label="More"
-          className="flex h-[48px] w-[48px] shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-ink text-white"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <circle cx="2" cy="2" r="1.4" fill="#fff" />
-            <circle cx="7" cy="2" r="1.4" fill="#fff" />
-            <circle cx="12" cy="2" r="1.4" fill="#fff" />
-            <circle cx="2" cy="7" r="1.4" fill="#fff" />
-            <circle cx="7" cy="7" r="1.4" fill="#fff" />
-            <circle cx="12" cy="7" r="1.4" fill="#fff" />
-            <circle cx="2" cy="12" r="1.4" fill="#fff" />
-            <circle cx="7" cy="12" r="1.4" fill="#fff" />
-            <circle cx="12" cy="12" r="1.4" fill="#fff" />
-          </svg>
-        </motion.button>
       </div>
     </motion.div>
   )

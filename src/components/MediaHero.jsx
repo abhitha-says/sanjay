@@ -5,7 +5,7 @@ import heroImage from '../assets/media-hero.png'
 
 const ease = [0.22, 1, 0.36, 1]
 
-// ── Ghost background watermark text (same as home BackgroundText) ────────────
+// ── Ghost background watermark text ────────────────────────────────────────────
 function BgWatermark() {
   const mx = useMotionValue(0)
   const sx = useSpring(mx, { stiffness: 40, damping: 25 })
@@ -66,12 +66,11 @@ function MediaImage() {
     <div
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { mx.set(0); my.set(0) }}
-      // Identical positioning to HeroImage
-      className="relative h-[320px] w-full sm:h-[400px] md:absolute md:bottom-0 md:right-[-3%] md:z-10 md:h-[82%] md:w-[65%] lg:right-[-3%] lg:h-[100%] lg:w-[74%] lg:-translate-y-[10px]"
+      className="absolute inset-0 z-0 hidden md:block"
     >
       <motion.div
-        className="relative h-full w-full"
-        initial={{ opacity: 0, scale: 1.08, x: 40 }}
+        className="absolute inset-0"
+        initial={{ opacity: 0, scale: 1.06, x: 30 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
         transition={{ duration: 1.4, delay: 0.24, ease }}
       >
@@ -82,19 +81,17 @@ function MediaImage() {
           style={{
             x,
             y,
-            // Very gradual left + bottom fade — no sharp edges
             WebkitMaskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.04) 8%, rgba(0,0,0,0.18) 18%, rgba(0,0,0,0.50) 30%, rgba(0,0,0,0.82) 42%, black 58%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.6) 10%, rgba(0,0,0,1) 22%, rgba(0,0,0,1) 100%)',
+              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 16%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.80) 40%, black 54%)',
             maskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.04) 8%, rgba(0,0,0,0.18) 18%, rgba(0,0,0,0.50) 30%, rgba(0,0,0,0.82) 42%, black 58%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.6) 10%, rgba(0,0,0,1) 22%, rgba(0,0,0,1) 100%)',
-            WebkitMaskComposite: 'source-in',
-            maskComposite: 'intersect',
-            WebkitMaskSize: '100% 100%',
-            maskSize: '100% 100%',
+              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 16%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.80) 40%, black 54%)',
             WebkitMaskRepeat: 'no-repeat',
             maskRepeat: 'no-repeat',
+            WebkitMaskSize: '100% 100%',
+            maskSize: '100% 100%',
+            objectPosition: '55% 20%',
           }}
-          className="h-full w-full object-cover object-[55%_18%]"
+          className="absolute inset-0 h-full w-full object-cover"
         />
       </motion.div>
 
@@ -102,18 +99,18 @@ function MediaImage() {
       <motion.div
         initial={{ opacity: 0, x: 16 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1.4, delay: 1.5, ease }}
+        transition={{ duration: 1.4, delay: 1.6, ease }}
         aria-hidden="true"
-        className="absolute bottom-8 right-6 z-20 md:bottom-10 md:right-10 lg:right-14"
+        className="absolute bottom-10 right-10 z-20 lg:bottom-14 lg:right-16"
       >
         <span
           style={{
             fontFamily: '"Cormorant Garamond", serif',
-            fontSize: 'clamp(20px, 2.4vw, 34px)',
+            fontSize: 'clamp(22px, 2.6vw, 38px)',
             fontStyle: 'italic',
             fontWeight: 600,
-            color: 'rgba(17,17,17,0.45)',
-            letterSpacing: '0.3px',
+            color: 'rgba(17,17,17,0.55)',
+            letterSpacing: '0.5px',
           }}
         >
           Sanjay Goel
@@ -139,70 +136,68 @@ function BackHomeBtn() {
 
 export default function MediaHero({ index, title, accent, subtitle }) {
   return (
-    /* Same container structure as <Hero> on home page */
-    <section className="relative min-h-screen w-full md:h-screen md:overflow-hidden">
+    <section className="relative h-screen w-full overflow-hidden">
+
       <BgWatermark />
 
-      <div className="flex flex-col md:contents">
-        {/* Photo — right half */}
-        <MediaImage />
+      {/* Full-bleed image — starts at the very top, behind the navbar */}
+      <MediaImage />
 
-        {/* Text content — left half */}
-        <div className="relative z-20 flex h-auto flex-col justify-start px-6 py-4 md:h-full md:justify-center md:px-0 md:pl-20 md:pt-0 md:translate-x-[30px] lg:max-w-[540px]">
+      {/* Text content — left half, vertically centred */}
+      <div className="relative z-20 flex h-full flex-col justify-center px-6 pt-[72px] pl-6 md:pl-20 lg:max-w-[540px] lg:pl-24">
 
-          {/* Back link */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.1, ease }}
-            className="mb-6 mt-20 md:mt-24"
-          >
-            <BackHomeBtn />
-          </motion.div>
+        {/* Back link */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.1, ease }}
+          className="mb-6"
+        >
+          <BackHomeBtn />
+        </motion.div>
 
-          {/* Index */}
-          <motion.div
+        {/* Index */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 1.03 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.4, delay: 0.72, ease }}
+          className="font-sans text-[20px] font-semibold text-ink"
+        >
+          {index}
+        </motion.div>
+
+        {/* Title */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30, scale: 1.03 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.4, delay: 0.84, ease }}
+          className="mt-2 font-serif font-black leading-[0.92] text-ink"
+          style={{ letterSpacing: '-2px', fontWeight: 900, fontSize: 'clamp(52px, 6.5vw, 110px)' }}
+        >
+          {title}
+          <br />
+          <span style={{ color: '#2d7a3a' }}>{accent}</span>
+        </motion.h1>
+
+        {/* Accent line */}
+        <motion.span
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={{ opacity: 1, scaleX: 1 }}
+          transition={{ duration: 0.7, delay: 1.0, ease }}
+          className="mt-4 block h-[2px] w-10 origin-left bg-accent"
+        />
+
+        {/* Subtitle */}
+        {subtitle && (
+          <motion.p
             initial={{ opacity: 0, y: 30, scale: 1.03 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1.4, delay: 0.72, ease }}
-            className="font-sans text-[20px] font-semibold text-ink"
+            transition={{ duration: 1.4, delay: 1.1, ease }}
+            className="mt-4 max-w-[440px] font-sans text-[17px] leading-[28px] text-secondary"
           >
-            {index}
-          </motion.div>
-
-          {/* Title */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30, scale: 1.03 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1.4, delay: 0.84, ease }}
-            className="mt-2 font-serif font-black leading-[0.92] text-ink"
-            style={{ letterSpacing: '-2px', fontWeight: 900, fontSize: 'clamp(52px, 6.5vw, 110px)' }}
-          >
-            {title}
-            <br />
-            <span style={{ color: '#2d7a3a' }}>{accent}</span>
-          </motion.h1>
-
-          {/* Red accent line */}
-          <motion.span
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.7, delay: 1.0, ease }}
-            className="mt-4 block h-[2px] w-10 origin-left bg-accent"
-          />
-
-          {/* Subtitle */}
-          {subtitle && (
-            <motion.p
-              initial={{ opacity: 0, y: 30, scale: 1.03 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 1.4, delay: 1.1, ease }}
-              className="mt-4 max-w-[440px] font-sans text-[17px] leading-[28px] text-secondary"
-            >
-              {subtitle}
-            </motion.p>
-          )}
-        </div>
+            {subtitle}
+          </motion.p>
+        )}
       </div>
     </section>
   )

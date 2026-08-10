@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import PageHeader from '../components/PageHeader'
 import Reveal from '../components/Reveal'
-import { heritage, water, publicService, byTheNumbers, finalStatement } from '../data/initiatives'
+import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
+import { heritage, water, publicService, byTheNumbers, finalStatement, philosophy } from '../data/initiatives'
 
 const ease = [0.22, 1, 0.36, 1]
 
@@ -152,23 +152,65 @@ export default function Initiatives() {
   const [activeWord, setActiveWord] = useState(publicService[0].word)
   const activeService = publicService.find((i) => i.word === activeWord)
 
+  const go = useTransitionNavigate()
+
   return (
     <main className="relative z-20">
-      <PageHeader
-        index="03"
-        title="Initiatives"
-        subtitle="Business is one part of the journey. Contribution is another."
-      />
 
-      {/* ── Philosophy ── */}
-      <section className="px-6 pb-16 md:px-14 lg:px-20">
+      {/* ── Hero ── */}
+      <section className="px-6 pt-20 pb-14 md:px-14 md:pt-24 md:pb-20 lg:px-20">
+        {/* Back link */}
         <Reveal>
-          <p className="max-w-[60ch] font-serif text-[clamp(20px,2.4vw,26px)] italic leading-[1.55] text-ink/80">
-            Four decades in business have run alongside a quieter thread of work — preserving what came before,
-            treating water and waste as problems worth solving, and showing up where institutions asked for a hand.
-            None of it competes with the business. It is the same discipline, spent on something else.
-          </p>
+          <button
+            onClick={() => go('/')}
+            className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[13px] text-secondary transition-colors hover:text-ink"
+            aria-label="Back home"
+          >
+            <span aria-hidden="true">&#8592;</span> Back home
+          </button>
         </Reveal>
+
+        {/* Two-column layout */}
+        <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-end">
+
+          {/* Left — title block */}
+          <div>
+            <Reveal delay={0.06}>
+              <span className="font-sans text-[20px] font-semibold text-ink">03</span>
+            </Reveal>
+            <Reveal
+              as="h1"
+              delay={0.14}
+              className="mt-2 font-serif text-[clamp(44px,7vw,104px)] font-black leading-[0.95] tracking-[-2px] text-ink"
+            >
+              Initiatives
+            </Reveal>
+            <Reveal delay={0.22} className="mt-6 max-w-[42ch] font-sans text-[18px] leading-[30px] text-secondary">
+              Business is one part of the journey. Contribution is another.
+            </Reveal>
+          </div>
+
+          {/* Right — philosophy pull-quote */}
+          <Reveal delay={0.3}>
+            <div className="relative border-l-[3px] border-brand pl-8 lg:pb-2">
+              <span className="mb-5 block font-sans text-[11px] font-semibold uppercase tracking-[0.22em] text-brand/70">
+                Philosophy
+              </span>
+              <p className="font-serif text-[clamp(17px,1.8vw,22px)] italic leading-[1.6] text-ink/75">
+                Four decades in business have run alongside a quieter thread of work — preserving what came before,
+                treating water and waste as problems worth solving, and showing up where institutions asked for a hand.
+              </p>
+              <p className="mt-4 font-serif text-[clamp(17px,1.8vw,22px)] italic leading-[1.6] text-ink/75">
+                None of it competes with the business. It is the same discipline, spent on something else.
+              </p>
+              {/* Decorative dot */}
+              <span
+                className="absolute -left-[7px] top-0 h-3 w-3 rounded-full bg-brand"
+                aria-hidden="true"
+              />
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ── Aryavarta Heritage Foundation — HERO CARD ── */}
