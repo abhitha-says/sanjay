@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
 import { useTransition } from '../context/TransitionContext'
@@ -32,13 +33,35 @@ export default function Dock() {
   const { pathname } = useLocation()
   const go = useTransitionNavigate()
   const { isTransitioning } = useTransition()
+  const scrollRef = useRef(null)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
+  useEffect(() => {
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+
+    const el = scrollRef.current
+    if (!el) return
+
+    function updateHint() {
+      setCanScrollRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 8)
+    }
+
+    updateHint()
+    el.addEventListener('scroll', updateHint, { passive: true })
+    window.addEventListener('resize', updateHint)
+    return () => {
+      el.removeEventListener('scroll', updateHint)
+      window.removeEventListener('resize', updateHint)
+    }
+  }, [])
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 60 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1.1, delay: 1.68, ease }}
-      className="relative z-30 mx-4 mb-4 flex h-[140px] items-stretch overflow-hidden rounded-dock bg-glass shadow-soft backdrop-blur-[20px] md:mx-8 md:mb-8 lg:mx-14"
+      className="dock-root relative z-30 mx-4 mb-4 flex h-[140px] items-stretch overflow-hidden rounded-dock bg-glass shadow-soft backdrop-blur-[20px] md:mx-8 md:mb-8 lg:mx-14"
       style={{ pointerEvents: isTransitioning ? 'none' : undefined }}
     >
       {/* Discover more button */}
@@ -46,16 +69,19 @@ export default function Dock() {
         onClick={() => go('/discover-more')}
         whileHover={{ y: -3, scale: 1.02 }}
         transition={{ duration: 0.25, ease }}
-        className="flex w-[250px] shrink-0 cursor-pointer items-center justify-between bg-ink px-8 font-sans text-white"
+        className="flex w-[124px] shrink-0 cursor-pointer items-center justify-between gap-1 bg-ink px-4 font-sans text-white sm:w-[250px] sm:gap-0 sm:px-8"
         aria-label="Discover more"
       >
-        <span className="text-[18px] font-medium">Discover more</span>
-        <span className="relative top-[6px] ml-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-[17px]">
+        <span className="text-[13px] font-medium leading-tight sm:text-[18px]">Discover more</span>
+        <span className="relative top-0 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/25 text-[13px] sm:top-[6px] sm:ml-4 sm:h-9 sm:w-9 sm:text-[17px]">
           &#8599;
         </span>
       </motion.button>
 
-      <div className="scrollbar-hide flex min-w-0 flex-1 items-center justify-between gap-[14px] overflow-x-auto px-6 py-[6px] lg:px-10">
+      <div
+        ref={scrollRef}
+        className="scrollbar-hide flex min-w-0 flex-1 items-center justify-between gap-[10px] overflow-x-auto px-4 py-[6px] sm:gap-[14px] sm:px-6 lg:px-10"
+      >
         {items.map((item) => {
           const active = pathname === item.to
           return (
@@ -89,6 +115,21 @@ export default function Dock() {
           )
         })}
       </div>
+
+      {canScrollRight && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 z-10 flex w-14 items-center justify-end bg-gradient-to-l from-glass from-40% to-transparent pr-2 sm:hidden"
+        >
+          <motion.span
+            animate={reducedMotion ? undefined : { x: [0, 5, 0] }}
+            transition={{ duration: 1.3, repeat: reducedMotion ? 0 : Infinity, ease: 'easeInOut' }}
+            className="text-[17px] text-ink/40"
+          >
+            &#8250;
+          </motion.span>
+        </div>
+      )}
     </motion.div>
   )
 }

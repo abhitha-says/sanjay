@@ -221,7 +221,7 @@ function BgWatermark() {
           lineHeight: 0.86,
           letterSpacing: '-4px',
           opacity: 0.05,
-          fontSize: 'clamp(70px, 16vw, 250px)',
+          fontSize: 'clamp(46px, 14vw, 250px)',
           color: '#111111',
         }}
       >
@@ -246,45 +246,72 @@ function JourneyImage() {
   }
 
   return (
-    <div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => { mx.set(0); my.set(0) }}
-      // portrait-2.png is a 500x500 square. Stretched across the full viewport
-      // with object-cover it upscaled ~4x and cropped the head off top and
-      // bottom, so it is boxed into a near-square panel on the right instead.
-      className="absolute bottom-0 right-0 z-0 hidden md:block md:h-[92%] md:w-[58%] lg:w-[52%] xl:w-[46%]"
-    >
-      <motion.div
-        className="absolute inset-0"
-        initial={{ opacity: 0, scale: 1.06, x: 30 }}
-        animate={{ opacity: 1, scale: 1, x: 0 }}
-        transition={{ duration: 1.4, delay: 0.24, ease }}
-      >
-        <motion.img
+    <>
+      {/* ── Mobile portrait backdrop (< md) ────────────────────────────────────
+          Portrait-led editorial: face sits high in frame so the eye reads
+          person → text as it travels down. The two-stop gradient keeps the
+          face as a presiding presence while the text area below stays clean.
+      */}
+      <div className="absolute inset-0 z-0 md:hidden" aria-hidden="true">
+        <img
           src={portrait2}
-          alt="Dr. Sanjay Goel"
-          fetchpriority="high"
-          style={{
-            x,
-            y,
-            // Left fade dissolves the panel edge into the page; bottom fade
-            // stops the portrait hard-cutting at the section border.
-            WebkitMaskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.06) 8%, rgba(0,0,0,0.3) 18%, rgba(0,0,0,0.7) 27%, black 36%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 7%, black 18%)',
-            maskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.06) 8%, rgba(0,0,0,0.3) 18%, rgba(0,0,0,0.7) 27%, black 36%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 7%, black 18%)',
-            WebkitMaskComposite: 'source-in',
-            maskComposite: 'intersect',
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskSize: '100% 100%',
-            maskSize: '100% 100%',
-            objectPosition: '50% 18%',
-          }}
-          className="absolute inset-0 h-full w-full object-cover"
+          alt=""
+          className="h-full w-full object-cover opacity-[0.32]"
+          style={{ objectPosition: '50% 5%' }}
         />
-      </motion.div>
-    </div>
+        {/* Heavier bottom fade for portrait-led editorial — face shows,
+            text block reads cleanly against near-white page. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-bg/20 via-bg/30 to-bg/90" />
+      </div>
+
+      {/* ── Desktop / Tablet portrait panel (≥ md) ──────────────────────────
+          Tablet (md–lg): editorial — narrower panel so the left text column
+          has enough breathing room for a clean two-column read.
+          Desktop (lg+): cinematic — panel expands, portrait dominates the
+          right half; left column pins firmly at max-width.
+      */}
+      <div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => { mx.set(0); my.set(0) }}
+        // portrait-2.png is 500×500 — panel is square-ish so no head cropping.
+        // md (tablet): 54% wide — enough room for the editorial text column.
+        // lg (laptop): 56% wide — starts going cinematic.
+        // xl (desktop): 60% wide — full cinematic split.
+        className="absolute bottom-0 right-0 z-0 hidden md:block md:h-[90%] md:w-[54%] lg:h-[96%] lg:w-[56%] xl:w-[60%]"
+      >
+        <motion.div
+          className="absolute inset-0"
+          initial={{ opacity: 0, scale: 1.06, x: 30 }}
+          animate={{ opacity: 1, scale: 1, x: 0 }}
+          transition={{ duration: 1.4, delay: 0.24, ease }}
+        >
+          <motion.img
+            src={portrait2}
+            alt="Dr. Sanjay Goel"
+            fetchpriority="high"
+            style={{
+              x,
+              y,
+              // Left fade: tablet needs stronger early fade (text column is
+              // narrower). Desktop: gentler start so more portrait shows.
+              WebkitMaskImage:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.04) 6%, rgba(0,0,0,0.22) 16%, rgba(0,0,0,0.62) 26%, rgba(0,0,0,0.9) 34%, black 44%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.45) 6%, black 16%)',
+              maskImage:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.04) 6%, rgba(0,0,0,0.22) 16%, rgba(0,0,0,0.62) 26%, rgba(0,0,0,0.9) 34%, black 44%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.45) 6%, black 16%)',
+              WebkitMaskComposite: 'source-in',
+              maskComposite: 'intersect',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskSize: '100% 100%',
+              maskSize: '100% 100%',
+              // Show upper-body / face: portrait is square so 15% from top is the chest
+              objectPosition: '50% 12%',
+            }}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </motion.div>
+      </div>
+    </>
   )
 }
 
@@ -305,16 +332,34 @@ function JourneyHero() {
   return (
     // The 72px in-flow <header> sits above <main>, so a full 100vh hero always
     // pushed its own bottom below the fold. Subtract the header height.
-    <section className="relative min-h-[calc(100svh-72px)] w-full md:h-[calc(100svh-72px)] md:overflow-hidden">
+    <section className="relative h-[calc(100svh-72px)] w-full overflow-hidden">
       <BgWatermark />
       <JourneyImage />
 
-      <div className="relative z-20 flex h-full flex-col justify-center px-6 pt-10 pb-10 md:pb-0 md:pt-0 md:pl-20 lg:max-w-[560px] lg:pl-24">
+      {/*
+        Mobile  (< md)  — Portrait-led editorial.
+          justify-end + pb-16 anchors the text at the bottom so the eye
+          reads portrait → back-link → typography → stats, travelling down.
+          px-5 keeps content away from the viewport edge on narrow phones.
+
+        Tablet  (md–lg) — Editorial.
+          justify-center vertically balances the text column against the
+          portrait panel. pl-12 gives the column enough clearance from the
+          left edge; max-w-[420px] prevents the copy from bleeding into the
+          portrait. The back-link is repositioned inside the top area with
+          a negative translate on the wrapper.
+
+        Desktop (lg+)   — Cinematic.
+          pl-16 / xl:pl-24 anchors the column firmly left. max-w-[520px]
+          creates a generous gutter between copy and portrait. The scroll
+          cue at the bottom fills the lower-left composition dead zone.
+      */}
+      <div className="relative z-20 flex h-full flex-col justify-end px-5 pb-16 pt-10 md:justify-center md:pb-0 md:pt-0 md:pl-12 md:max-w-[460px] lg:max-w-[520px] lg:pl-16 xl:pl-24">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.1, ease }}
-          className="mb-6 mt-16 md:mt-0"
+          className="mb-5 md:mb-8"
         >
           <BackHomeBtn />
         </motion.div>
@@ -349,7 +394,7 @@ function JourneyHero() {
           initial={{ opacity: 0, y: 30, scale: 1.03 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1.4, delay: 1.1, ease }}
-          className="mt-4 max-w-[460px] font-sans text-[17px] leading-[28px] text-secondary"
+          className="mt-4 max-w-[420px] font-sans text-[14.5px] leading-[23px] text-secondary sm:text-[15px] sm:leading-[25px] md:max-w-[380px] md:text-[16px] md:leading-[27px] lg:max-w-[420px] lg:text-[17px] lg:leading-[28px]"
         >
           Four decades of work across industries and geographies — from a fertiliser trading
           floor in Kolkata to the chairmanship of a diversified group, with a medical degree and
@@ -360,27 +405,42 @@ function JourneyHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.35, ease }}
-          className="mt-8 flex flex-wrap gap-3"
+          className="mt-6 flex flex-wrap gap-2.5 md:mt-8 md:gap-3"
         >
           {[
             { num: '40+', label: 'Years' },
             { num: String(roleCount), label: 'Roles Held' },
             { num: '1985', label: 'Since' },
           ].map(({ num, label }) => (
-            <div key={label} className="rounded-[14px] [corner-shape:squircle] border border-border bg-white/60 px-4 py-2.5 text-center backdrop-blur-sm [@media(prefers-reduced-transparency:reduce)]:bg-white">
+            <div key={label} className="rounded-[14px] [corner-shape:squircle] border border-border bg-white/60 px-3.5 py-2 text-center backdrop-blur-sm md:px-4 md:py-2.5 [@media(prefers-reduced-transparency:reduce)]:bg-white">
               {/* lining-nums matters most here: Cormorant defaults to old-style
                   figures, which made "1985" ride up and down the baseline. */}
               <div
-                className="font-serif text-[30px] leading-none tabular-nums lining-nums text-ink"
+                className="font-serif text-[26px] leading-none tabular-nums lining-nums text-ink md:text-[30px]"
                 style={{ fontWeight: 700, letterSpacing: '-0.5px' }}
               >
                 {num}
               </div>
-              <div className="mt-0.5 font-sans text-[10px] font-semibold uppercase tracking-[0.1em] text-secondary">
+              <div className="mt-0.5 font-sans text-[9px] font-semibold uppercase tracking-[0.1em] text-secondary md:text-[10px]">
                 {label}
               </div>
             </div>
           ))}
+        </motion.div>
+
+        {/* Scroll cue — cinematic anchor in the lower-left dead zone.
+            Hidden on mobile (no whitespace there); shown on desktop. */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.9, ease }}
+          className="mt-10 hidden items-center gap-3 md:flex md:mt-14"
+          aria-hidden="true"
+        >
+          <span className="h-[26px] w-px bg-border" />
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary/70">
+            Scroll for the full record
+          </span>
         </motion.div>
       </div>
     </section>
@@ -471,12 +531,16 @@ function RowMilestone({ m, index }) {
       transition={{ duration: 0.7, delay: Math.min((index % 4) * 0.06, 0.24), ease }}
       className="group scroll-mt-28 border-b border-border py-6"
     >
-      <div className="grid grid-cols-[36px_1fr_auto] items-start gap-x-5 md:grid-cols-[40px_1fr_160px]">
+      <div className="grid grid-cols-[36px_1fr] items-start gap-x-5 md:grid-cols-[40px_1fr_160px]">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
           <Icon className="h-4 w-4" />
         </span>
 
         <div className="min-w-0">
+          {/* Below md the period column doesn't exist, so it reads as a label above the title instead of squeezing the text into a third column. */}
+          <span className="mb-1 block font-sans text-[12px] font-bold uppercase tracking-[0.1em] text-brand md:hidden">
+            {m.period}
+          </span>
           <h3 className="font-serif text-[20px] font-bold leading-snug text-ink transition-colors duration-200 group-hover:text-brand md:text-[22px]">
             {m.title}
           </h3>
@@ -487,7 +551,7 @@ function RowMilestone({ m, index }) {
           {m.focus && <p className="mt-2 font-serif text-[14.5px] italic leading-[21px] text-ink/65">"{m.focus}"</p>}
         </div>
 
-        <div className="pt-1 text-left md:text-right">
+        <div className="hidden pt-1 text-right md:block">
           <span className="font-sans text-[12px] font-bold uppercase tracking-[0.1em] text-brand">{m.period}</span>
         </div>
       </div>

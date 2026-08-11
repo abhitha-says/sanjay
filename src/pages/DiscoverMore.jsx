@@ -9,6 +9,8 @@ import {
   useInView,
   useMotionValue,
   useSpring,
+  useVelocity,
+  useMotionValueEvent,
 } from 'framer-motion'
 import { BooksShowcase } from '../components/BooksShowcase'
 
@@ -45,6 +47,7 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     tag: 'Origins',
     desc: 'Born in Rajasthan and schooled at St. Xavier\'s College in Kolkata, Sanjay Goel\'s early years were shaped by two vastly different worlds — the warmth of Rajasthani heritage and the intellectual rigour of Bengal.',
     to: '/journey',
+    cta: 'Explore the Journey',
     images: { front: imgs.portrait3, back: imgs.heritage },
     pages: [
       { period: '1975 – 1985', title: 'Rajasthan Roots', body: 'Growing up in Rajasthan, young Sanjay was immersed in the rich culture and traditions of the land. The values of family, community, and enterprise were instilled early.', image: imgs.portrait3 },
@@ -59,6 +62,7 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     tag: 'Enterprise',
     desc: 'From a single logistics operation to a diversified group spanning cargo, real estate, and a dynamic business network — the GTC story is one of quiet, consistent ambition.',
     to: '/leadership',
+    cta: 'View Leadership',
     images: { front: imgs.felicitated, back: imgs.moderator },
     pages: [
       { period: '1997 – 2006', title: 'GTC Corporation', body: 'As President of GTC Corporation, Dr. Goel oversaw all management operations and decisions across the group — laying the foundation for decades of growth.', image: imgs.moderator },
@@ -73,6 +77,7 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     tag: 'Industry',
     desc: 'As Country Representative for Supply Chain Asia and a leader at CSCMP, Dr. Goel helped shape the discourse on logistics and supply chain management in India.',
     to: '/leadership',
+    cta: 'Read about Leadership',
     images: { front: imgs.speaking, back: imgs.cscmpNews },
     pages: [
       { period: '2006 – 2025', title: 'Supply Chain Asia', body: 'Serving as Country Representative for India, Dr. Goel connected Indian supply chain professionals with global best practices and international networks.', image: imgs.speaking },
@@ -87,6 +92,7 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     tag: 'Community',
     desc: 'Across decades, the connections forged — with ministers, academics, artists, and activists — reflect a life lived at the intersection of business and society.',
     to: '/leadership',
+    cta: 'See the Full Story',
     images: { front: imgs.sanjivSanyal, back: imgs.sudhir },
     pages: [
       { period: '2015 – Present', title: 'Civic & Political Connections', body: 'With Shri Sanjiv Sanyal, Economic Adviser to the PM, and Shri Sudhir Mungantiwar, former Finance Minister, Dr. Goel has engaged at the highest levels of governance.', image: imgs.sanjivSanyal },
@@ -101,6 +107,7 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     tag: 'Legacy',
     desc: 'Heritage preservation, clean water access, education, and housing for the underserved — these are not footnotes but chapters of equal weight in the story of Dr. Sanjay Goel.',
     to: '/initiatives',
+    cta: 'Explore Initiatives',
     images: { front: imgs.portrait2, back: imgs.mhada },
     pages: [
       { period: '2012 – Present', title: 'Housing & MHADA', body: 'As Managing Partner of GTC Enterprises, Dr. Goel has been deeply involved in the development of low-cost housing for the Mumbai Metropolitan Region.', image: imgs.mhada },
@@ -110,18 +117,35 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
 ]
 
 // ─── Ideas & Perspectives data ────────────────────────────────────────────────
+// `glue: true` keeps an item joined to the one that follows it (e.g. "Supply Chain" +
+// "& Logistics") so the pair wraps together instead of the "&" word orphaning onto its own line.
 const IDEAS = [
   { text: 'Leadership',               size: 'xl',  italic: false },
   { text: 'Entrepreneurship',         size: 'lg',  italic: true  },
-  { text: 'Supply Chain',             size: 'xl',  italic: false },
+  { text: 'Supply Chain',             size: 'xl',  italic: false, glue: true },
   { text: '& Logistics',              size: 'md',  italic: true  },
-  { text: 'Heritage',                 size: 'lg',  italic: false },
+  { text: 'Heritage',                 size: 'lg',  italic: false, glue: true },
   { text: '& Culture',               size: 'md',  italic: true  },
   { text: 'Education',                size: 'lg',  italic: false },
   { text: 'Social Responsibility',    size: 'md',  italic: false },
-  { text: 'Water',                    size: 'xl',  italic: true  },
+  { text: 'Water',                    size: 'xl',  italic: true, glue: true },
   { text: '& Sustainability',         size: 'md',  italic: false },
 ]
+
+const IDEA_GROUPS = (() => {
+  const groups = []
+  let idx = 0
+  for (let i = 0; i < IDEAS.length; i++) {
+    const item = { ...IDEAS[i], idx: idx++ }
+    if (IDEAS[i].glue && IDEAS[i + 1]) {
+      groups.push([item, { ...IDEAS[i + 1], idx: idx++ }])
+      i++
+    } else {
+      groups.push([item])
+    }
+  }
+  return groups
+})()
 
 // ─── Gallery data: People · Events · Work ─────────────────────────────────────
 const ALL_PHOTOS = [
@@ -199,6 +223,83 @@ function StaggerWords({ text, className = '', delay = 0 }) {
   )
 }
 
+// ─── Mobile scatter — identical visual language to the desktop ImageTrail:
+// same AnimatePresence lifecycle, same initial/animate/exit values
+// (opacity 0→0.46→0, scale 0.68→1→0.88, rotate on entry, y:-22 on exit),
+// same 1500ms ephemeral hold, same image set and cycling logic.
+//
+// Only the trigger changes: scroll-velocity threshold instead of mousemove-distance.
+// Six predefined zones cover right-side, left-margin, and centre-top regions
+// of the narrow viewport — matching the scatter density of the desktop trail.
+const MOBILE_ZONES = [
+  // Right side — primary scatter area (clear of the left-aligned text column)
+  { xMin: 0.56, xMax: 0.65, yMin: 0.05, yMax: 0.20 }, // ① top-right
+  { xMin: 0.58, xMax: 0.65, yMin: 0.33, yMax: 0.50 }, // ② mid-right
+  { xMin: 0.54, xMax: 0.65, yMin: 0.60, yMax: 0.76 }, // ③ lower-right
+  // Left margin — narrow strip beside the edge
+  { xMin: 0.01, xMax: 0.08, yMin: 0.18, yMax: 0.35 }, // ④ left-upper
+  { xMin: 0.01, xMax: 0.08, yMin: 0.52, yMax: 0.68 }, // ⑤ left-lower
+  // Centre-high — above the headline text
+  { xMin: 0.28, xMax: 0.50, yMin: 0.01, yMax: 0.10 }, // ⑥ centre-top
+]
+
+function MobileScatterTrail({ containerRef }) {
+  const [mobileTrails, setMobileTrails] = useState([])
+  const mobileCounter = useRef(0)
+  const lastSpawnMs   = useRef(0)
+
+  const { scrollY } = useScroll()
+  const velocity    = useVelocity(scrollY)
+
+  // Velocity-based spawn — mirrors the 95px distance gate used on desktop.
+  // Fires when the user scrolls fast enough and the hero is still in the viewport.
+  useMotionValueEvent(velocity, 'change', (v) => {
+    if (Math.abs(v) < 80) return                  // velocity threshold (px/s)
+
+    const now = Date.now()
+    if (now - lastSpawnMs.current < 280) return   // rate-limit: ≈ desktop's 95px spacing
+
+    // Only spawn while the hero section is visible
+    const el = containerRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    if (rect.bottom < 0 || rect.top > window.innerHeight) return
+
+    lastSpawnMs.current = now
+    const id   = ++mobileCounter.current
+    const zone = MOBILE_ZONES[id % MOBILE_ZONES.length]
+    const xPct = (zone.xMin + Math.random() * (zone.xMax - zone.xMin)) * 100
+    const yPct = (zone.yMin + Math.random() * (zone.yMax - zone.yMin)) * 100
+    const rot  = (Math.random() - 0.5) * 22  // same spread as desktop
+
+    setMobileTrails(prev => [
+      ...prev.slice(-5),
+      { id, xPct, yPct, img: TRAIL_IMGS[id % TRAIL_IMGS.length], rot },
+    ])
+    // Same 1500ms ephemeral lifetime as desktop trail
+    setTimeout(() => setMobileTrails(prev => prev.filter(t => t.id !== id)), 1500)
+  })
+
+  return (
+    <AnimatePresence>
+      {mobileTrails.map(t => (
+        <motion.div
+          key={t.id}
+          // Identical entry / peak / exit as the desktop ImageTrail items
+          initial={{ opacity: 0, scale: 0.68, rotate: t.rot - 12 }}
+          animate={{ opacity: 0.46, scale: 1, rotate: t.rot }}
+          exit={{ opacity: 0, scale: 0.88, y: -22 }}
+          transition={{ duration: 0.3, ease }}
+          className="absolute overflow-hidden rounded-[8px] shadow-[0_10px_36px_rgba(0,0,0,0.16)]"
+          style={{ left: `${t.xPct}%`, top: `${t.yPct}%`, width: 110, height: 138 }}
+        >
+          <img src={t.img} alt="" className="h-full w-full object-cover" />
+        </motion.div>
+      ))}
+    </AnimatePresence>
+  )
+}
+
 // ─── Hero Image Trail ──────────────────────────────────────────────────────────
 function ImageTrail({ containerRef }) {
   const [trails, setTrails] = useState([])
@@ -225,19 +326,27 @@ function ImageTrail({ containerRef }) {
     return () => el.removeEventListener('mousemove', handle)
   }, [containerRef, handle])
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden" style={{ zIndex: 2 }}>
-      <AnimatePresence>
-        {trails.map(t => (
-          <motion.div key={t.id}
-            initial={{ opacity: 0, scale: 0.68, rotate: t.rot - 12 }}
-            animate={{ opacity: 0.46, scale: 1, rotate: t.rot }}
-            exit={{ opacity: 0, scale: 0.88, y: -22 }}
-            transition={{ duration: 0.3, ease }}
-            className="absolute overflow-hidden rounded-[8px] shadow-[0_10px_36px_rgba(0,0,0,0.16)]"
-            style={{ left: t.x - 58, top: t.y - 72, width: 116, height: 145 }}
-          ><img src={t.img} alt="" className="h-full w-full object-cover" /></motion.div>
-        ))}
-      </AnimatePresence>
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ zIndex: 2 }}>
+      {/* Desktop trail: scoped overflow-hidden — cursor coords are always inside hero
+          bounds so this only prevents scroll-bar jitter on the section edge. */}
+      <div className="hidden lg:block absolute inset-0 overflow-hidden">
+        <AnimatePresence>
+          {trails.map(t => (
+            <motion.div key={t.id}
+              initial={{ opacity: 0, scale: 0.68, rotate: t.rot - 12 }}
+              animate={{ opacity: 0.46, scale: 1, rotate: t.rot }}
+              exit={{ opacity: 0, scale: 0.88, y: -22 }}
+              transition={{ duration: 0.3, ease }}
+              className="absolute overflow-hidden rounded-[8px] shadow-[0_10px_36px_rgba(0,0,0,0.16)]"
+              style={{ left: t.x - 58, top: t.y - 72, width: 116, height: 145 }}
+            ><img src={t.img} alt="" className="h-full w-full object-cover" /></motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      {/* Mobile scatter: overflow-visible so items near edges are not clipped */}
+      <div className="lg:hidden absolute inset-0 overflow-visible">
+        <MobileScatterTrail containerRef={containerRef} />
+      </div>
     </div>
   )
 }
@@ -255,9 +364,17 @@ function ManBehindWork() {
   return (
     <section ref={sectionRef} className="relative border-t border-border" style={{ minHeight: '130vh' }}>
       <div className="sticky top-0 h-screen overflow-hidden">
+        {/* Background portrait wash — below lg the dedicated portrait column is hidden, so give the text something to sit against */}
+        <div className="absolute inset-0 lg:hidden" aria-hidden="true">
+          <motion.div style={{ scale: imgScale, y: imgY }} className="h-full w-full">
+            <img src={portrait3Img} alt="" className="h-full w-full object-cover object-top opacity-[0.16]" />
+          </motion.div>
+          <div className="absolute inset-0 bg-gradient-to-b from-bg/50 via-bg/75 to-bg" />
+          <div className="absolute inset-0 bg-gradient-to-r from-bg/70 via-bg/35 to-bg/70" />
+        </div>
         <div className="absolute inset-0 grid lg:grid-cols-2">
           {/* Left: text */}
-          <div className="relative flex flex-col justify-center px-6 py-24 md:px-14 lg:px-20" style={{ zIndex: 2 }}>
+          <div className="relative flex flex-col justify-center px-5 py-16 sm:px-6 sm:py-24 md:px-14 lg:px-20" style={{ zIndex: 2 }}>
             <FadeUp className="mb-6 flex items-center gap-4">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand font-sans text-[11px] font-black text-white shrink-0">01</span>
               <div>
@@ -330,7 +447,7 @@ function IdeasPerspectives() {
   return (
     <section className="border-t-2 border-border overflow-hidden">
       {/* Header */}
-      <div className="px-6 pt-36 pb-16 md:px-14 lg:px-20">
+      <div className="px-5 pt-20 pb-10 sm:px-6 sm:pt-36 sm:pb-16 md:px-14 lg:px-20">
         <FadeUp className="mb-6 flex items-center gap-4">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand font-sans text-[11px] font-black text-white shrink-0">02</span>
           <div>
@@ -364,22 +481,29 @@ function IdeasPerspectives() {
       {/* Central ideas grid — staggered large words */}
       <div className="px-6 py-10 md:px-14 lg:px-20">
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-3">
-          {IDEAS.map((idea, i) => (
-            <motion.div
-              key={idea.text}
-              initial={{ opacity: 0, y: 40, clipPath: 'inset(0 0 100% 0)' }}
-              whileInView={{ opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)' }}
-              viewport={{ once: true, margin: '-5%' }}
-              transition={{ duration: 0.75, delay: i * 0.07, ease: easeSlow }}
-              whileHover={{ color: '#2d7a3a', x: 4, transition: { duration: 0.22 } }}
-              className={`cursor-default select-none font-serif font-black leading-[1.1] tracking-[-2px] text-ink ${
-                idea.size === 'xl' ? 'text-[clamp(44px,6.5vw,96px)]' :
-                idea.size === 'lg' ? 'text-[clamp(34px,4.5vw,68px)]' :
-                                     'text-[clamp(24px,3.2vw,48px)] text-ink/40'
-              } ${idea.italic ? 'italic' : ''}`}
+          {IDEA_GROUPS.map((group) => (
+            <div
+              key={group.map((g) => g.text).join('+')}
+              className="flex flex-wrap items-baseline gap-x-3"
             >
-              {idea.text}
-            </motion.div>
+              {group.map((idea) => (
+                <motion.div
+                  key={idea.text}
+                  initial={{ opacity: 0, y: 40, clipPath: 'inset(0 0 100% 0)' }}
+                  whileInView={{ opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)' }}
+                  viewport={{ once: true, margin: '-5%' }}
+                  transition={{ duration: 0.75, delay: idea.idx * 0.07, ease: easeSlow }}
+                  whileHover={{ color: '#2d7a3a', x: 4, transition: { duration: 0.22 } }}
+                  className={`cursor-default select-none font-serif font-black leading-[1.1] tracking-[-2px] text-ink ${
+                    idea.size === 'xl' ? 'text-[clamp(44px,6.5vw,96px)]' :
+                    idea.size === 'lg' ? 'text-[clamp(34px,4.5vw,68px)]' :
+                                         'text-[clamp(24px,3.2vw,48px)] text-ink/40'
+                  } ${idea.italic ? 'italic' : ''}`}
+                >
+                  {idea.text}
+                </motion.div>
+              ))}
+            </div>
           ))}
         </div>
       </div>
@@ -526,9 +650,9 @@ function LifeOfContribution() {
 
   return (
     <section ref={ref} className="relative border-t border-border overflow-hidden">
-      {/* Parallax portrait — now clearly visible on the right */}
+      {/* Parallax portrait — full-bleed cinematic backdrop on mobile, original right-column treatment from md up */}
       <motion.div aria-hidden="true"
-        className="pointer-events-none absolute right-0 top-0 h-full w-[52%]"
+        className="pointer-events-none absolute right-0 top-0 h-full w-full md:w-[52%]"
         style={{ y: bgY, opacity: bgOp }}>
         <img src={portrait2Img} alt="" className="h-full w-full object-cover object-top" />
         {/* Strong left-fade so text on the left stays readable */}
@@ -539,7 +663,7 @@ function LifeOfContribution() {
       {/* Strong left guard so left text column is always crisp */}
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-bg via-bg/85 to-transparent" />
 
-      <div className="relative px-6 py-44 md:px-14 lg:px-20" style={{ zIndex: 2 }}>
+      <div className="relative px-5 py-16 sm:px-6 sm:py-24 md:px-14 md:py-44 lg:px-20" style={{ zIndex: 2 }}>
         {/* Eyebrow */}
         <FadeUp className="mb-8 flex items-center gap-4">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand font-sans text-[11px] font-black text-white shrink-0">04</span>
@@ -553,10 +677,10 @@ function LifeOfContribution() {
         <div className="max-w-[680px] mb-16">
           {['Business creates value.', 'Contribution gives it meaning.'].map((line, i) => (
             <MaskReveal key={i} delay={i * 0.2}>
-              <div className={`font-serif font-black leading-[0.93] tracking-[-3px] ${
+              <div className={`font-serif font-black leading-[0.93] tracking-[-2px] sm:tracking-[-3px] ${
                 i === 0
-                  ? 'text-[clamp(38px,5.5vw,82px)] text-ink'
-                  : 'text-[clamp(38px,5.5vw,82px)] text-ink/35 italic'
+                  ? 'text-[clamp(30px,5.5vw,82px)] text-ink'
+                  : 'text-[clamp(30px,5.5vw,82px)] text-ink/35 italic'
               }`}>{line}</div>
             </MaskReveal>
           ))}
@@ -608,7 +732,7 @@ function ClosingCTA() {
   return (
     <>
       <ArchiveModal open={archiveOpen} onClose={() => setArchiveOpen(false)} />
-      <section ref={ref} className="relative overflow-hidden border-t border-border px-6 pb-44 pt-40 md:px-14 lg:px-20">
+      <section ref={ref} className="relative overflow-hidden border-t border-border px-5 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-24 md:px-14 md:pb-44 md:pt-40 lg:px-20">
       {/* Ghosted portrait parallax */}
       <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ y: bgY, opacity: bgOp }}>
         <img src={portrait3Img} alt="" className="absolute right-0 top-0 h-full w-1/2 object-cover object-center" />
@@ -618,7 +742,7 @@ function ClosingCTA() {
       <div className="relative max-w-[700px]" style={{ zIndex: 2 }}>
         {/* Mask-reveal headline */}
         <MaskReveal>
-          <div className="font-serif text-[clamp(40px,6.5vw,100px)] font-black leading-[0.9] tracking-[-4px] text-ink">
+          <div className="font-serif text-[clamp(32px,6.5vw,100px)] font-black leading-[0.9] tracking-[-2px] sm:tracking-[-4px] text-ink">
             There is more
             <br />
             <em className="text-ink/30">to every journey.</em>
@@ -682,9 +806,17 @@ function ArchiveModal({ open, onClose }) {
   })
 
   useEffect(() => {
-    if (open) document.body.style.overflow = 'hidden'
-    else document.body.style.overflow = ''
-    return () => { document.body.style.overflow = '' }
+    if (open) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.setAttribute('data-archive-open', '')
+    } else {
+      document.body.style.overflow = ''
+      document.documentElement.removeAttribute('data-archive-open')
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.removeAttribute('data-archive-open')
+    }
   }, [open])
 
   // Keyboard Escape closes modal
@@ -862,12 +994,16 @@ export default function DiscoverMore() {
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         ref={heroRef}
-        className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 pb-24 pt-24 md:px-14 lg:px-20"
+        className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden px-5 pb-16 pt-20 sm:px-6 sm:pb-24 sm:pt-24 md:px-14 lg:px-20"
       >
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          {/* Mobile: portrait treated as an intentional cinematic backdrop — wider,
+              face kept in frame via a top-biased crop, and visible enough to read as
+              a presence rather than a smudge. Desktop (md+) is untouched — same 55%
+              column, same object-center crop, same whisper-quiet 0.068 opacity. */}
           <img src={portrait3Img} alt=""
-            className="absolute right-0 top-0 h-full w-[55%] object-cover object-center opacity-[0.068]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/82 to-transparent" />
+            className="absolute right-0 top-0 h-full w-[72%] object-cover object-[58%_12%] opacity-[0.15] md:w-[55%] md:object-center md:opacity-[0.068]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-bg via-bg/48 to-transparent md:via-bg/82" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg" />
         </div>
 
@@ -890,7 +1026,7 @@ export default function DiscoverMore() {
               <motion.h1
                 initial={{ y: '105%' }} animate={{ y: 0 }}
                 transition={{ duration: 1.02, delay: 0.32 + i * 0.15, ease }}
-                className="block font-serif text-[clamp(46px,8vw,118px)] font-black leading-[0.92] tracking-[-3px] text-ink"
+                className="block font-serif text-[clamp(38px,7.5vw,118px)] font-black leading-[0.92] tracking-[-2px] sm:tracking-[-3px] text-ink"
               >{line}</motion.h1>
             </div>
           ))}
@@ -898,7 +1034,7 @@ export default function DiscoverMore() {
           <motion.p
             initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.82, ease }}
-            className="mt-10 max-w-[520px] font-sans text-[17px] leading-[30px] text-secondary"
+            className="mt-7 max-w-[520px] font-sans text-[14px] leading-[24px] sm:text-[17px] sm:leading-[30px] text-secondary"
           >
             Explore the work, people, ideas and institutions that have shaped
             Dr. Sanjay Goel's journey.

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Reveal from '../components/Reveal'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
 import { heritage, water, publicService, byTheNumbers, finalStatement, philosophy } from '../data/initiatives'
+import heritageBg from '../assets/heritage-bg.png'
 
 const ease = [0.22, 1, 0.36, 1]
 
@@ -15,7 +16,7 @@ function InitiativeCard({ number, label, title, period, description, accent = fa
           <span className={`font-sans text-[12px] font-semibold uppercase tracking-[0.18em] ${accent ? 'text-white/50' : 'text-brand'}`}>
             {label}
           </span>
-          <span className={`font-serif text-[clamp(48px,6vw,72px)] font-black leading-none tabular-nums ${accent ? 'text-white/10' : 'text-brand/10'}`}>
+          <span className={`font-serif text-[clamp(36px,6vw,72px)] font-black leading-none tabular-nums ${accent ? 'text-white/10' : 'text-brand/10'}`}>
             {number}
           </span>
         </div>
@@ -176,7 +177,7 @@ export default function Initiatives() {
           {/* Left — title block */}
           <div>
             <Reveal delay={0.06}>
-              <span className="font-sans text-[20px] font-semibold text-ink">03</span>
+              <span className="font-sans text-[20px] font-semibold text-ink">04</span>
             </Reveal>
             <Reveal
               as="h1"
@@ -216,14 +217,16 @@ export default function Initiatives() {
       {/* ── Aryavarta Heritage Foundation — HERO CARD ── */}
       <section className="px-6 pb-6 md:px-14 lg:px-20">
         <Reveal>
-          <div className="relative overflow-hidden rounded-[32px] bg-ink p-10 md:p-14">
+          <div className="relative overflow-hidden rounded-[32px] bg-ink p-6 md:p-10 lg:p-14">
             {/* Background ambient glow */}
             <div className="pointer-events-none absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-brand/20 blur-[120px]" aria-hidden="true" />
             <div className="pointer-events-none absolute -bottom-24 -left-24 h-[400px] w-[400px] rounded-full bg-brand/10 blur-[100px]" aria-hidden="true" />
 
-            <div className="relative grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
-              {/* Left: content */}
-              <div>
+            {/* Mobile leads with the portrait (order-first); md+ restores the
+                original text-left/image-right editorial columns. */}
+            <div className="relative grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-start md:gap-10">
+              {/* Content */}
+              <div className="order-2 md:order-1">
                 <span className="inline-block rounded-pill border border-white/15 bg-white/8 px-4 py-1.5 font-sans text-[12px] font-semibold uppercase tracking-[0.16em] text-white/60">
                   Founder · 2020 — Present
                 </span>
@@ -247,13 +250,13 @@ export default function Initiatives() {
                 <HeritageDetail data={heritage} />
               </div>
 
-              {/* Right: image + stats */}
-              <div className="flex flex-col gap-5">
+              {/* Portrait + stats — leads on mobile, sits right of text from md up */}
+              <div className="order-1 flex flex-col gap-5 md:order-2">
                 <div className="overflow-hidden rounded-[22px] shadow-[0_20px_60px_rgba(0,0,0,.4)]">
                   <img
                     src={heritage.image}
                     alt={heritage.imageCaption}
-                    className="h-[300px] w-full object-cover object-top md:h-[360px] transition-transform duration-700 hover:scale-105"
+                    className="h-[260px] w-full object-cover object-top md:h-[360px] transition-transform duration-700 hover:scale-105"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -357,7 +360,7 @@ export default function Initiatives() {
         </Reveal>
 
         {/* Cards grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {publicService.map((item, i) => (
             <ServiceCard key={item.word} item={item} index={i} />
           ))}

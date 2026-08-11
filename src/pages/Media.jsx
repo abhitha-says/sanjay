@@ -233,7 +233,7 @@ export default function Media() {
             Languages
           </h2>
         </Reveal>
-        <div className="grid grid-cols-2 gap-x-12 gap-y-0 lg:max-w-[700px]">
+        <div className="grid grid-cols-1 gap-y-0 sm:grid-cols-2 sm:gap-x-12 lg:max-w-[700px]">
           {languages.map((lang, i) => (
             <Reveal
               key={lang.name}

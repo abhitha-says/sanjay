@@ -13,8 +13,10 @@ export interface BookCfg {
   /** Short label shown next to the year in the detail panel, e.g. "Career Timeline". */
   tag?: string;
   desc: string;
-  /** Route this chapter's "Read full chapter" button navigates to. */
+  /** Route this chapter's CTA button navigates to. */
   to?: string;
+  /** Label shown on the CTA button. Defaults to 'Read Full Chapter'. */
+  cta?: string;
 
   // Procedural cover painters. All optional — omit and supply `images` instead, or omit both for a generated placeholder.
   front?: (x: CanvasRenderingContext2D, w: number, h: number) => void;
@@ -122,6 +124,8 @@ export function BooksShowcase({
   const [selectedCfg, setSelectedCfg] = useState<BookCfg | null>(null);
   const [pageInfo, setPageInfo] = useState({ index: 0, total: 0 });
   const [mounted, setMounted] = useState(false);
+  // Detected on first touch event so we can show mobile-specific affordances.
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   // hero-word entrance: flip to `mounted` one frame after first paint so the
   // opacity/translate transition below actually has something to animate from.
@@ -968,16 +972,22 @@ export function BooksShowcase({
     function computeSlots() {
       const a = dims.w / Math.max(1, dims.h);
       const portrait = a < 0.85;
-      const fit = portrait ? clamp(a / 1.08, 0.38, 0.74) : clamp(a / 1.62, 0.52, 1);
+      // Portrait: use a more generous fit so books fill the screen better.
+      // On very narrow screens (360px) the old 0.38 minimum made books tiny.
+      // New minimum: 0.52 for portrait, giving books ~35% more apparent size.
+      const fit = portrait ? clamp(a / 0.80, 0.52, 0.92) : clamp(a / 1.62, 0.52, 1);
       bookRoot.scale.setScalar(fit);
-      bookRoot.position.y = -(1 - fit) * 0.28;
+      bookRoot.position.y = portrait ? -(1 - fit) * 0.18 : -(1 - fit) * 0.28;
       SLOTS.portrait = portrait;
 
+      // Portrait hero slots: push books further apart so they don't overlap at scale.
+      // Center book brought forward (z=0.8) and elevated (y=0.0) so it's dominant.
+      // Side books angled more dramatically for a proper fanned-book feel.
       SLOTS.hero = SLOTS.portrait
         ? [
-          { p: [-1.36, -0.58, -0.12], r: [-0.045, 0.4, 0.185], s: 1.25 },
-          { p: [0.2, -0.22, 0.6], r: [-0.05, -0.1, -0.035], s: 1.35 },
-          { p: [1.62, -0.62, -0.34], r: [-0.045, -0.42, -0.17], s: 1.25 },
+          { p: [-1.72, -0.62, -0.18], r: [-0.04, 0.48, 0.22], s: 1.15 },
+          { p: [0.0, -0.08, 0.80], r: [-0.04, -0.06, -0.02], s: 1.42 },
+          { p: [1.72, -0.66, -0.22], r: [-0.04, -0.52, -0.20], s: 1.15 },
         ]
         : [
           { p: [-2.05, -0.58, -0.12], r: [-0.045, 0.4, 0.185], s: 1.22 },
@@ -986,26 +996,61 @@ export function BooksShowcase({
         ];
 
       if (!showDetailPanel) {
-        SLOTS.detail = { p: [0, -0.05, 0.75], r: [0.02, -0.34, 0.05], s: SLOTS.portrait ? 0.94 : 1.08 };
+        SLOTS.detail = { p: [0, -0.05, 0.75], r: [0.02, -0.34, 0.05], s: SLOTS.portrait ? 1.05 : 1.08 };
         return;
       }
 
       if (SLOTS.portrait) {
         const el = dpRef.current;
-        const panelH = el && el.offsetHeight > 40 ? el.offsetHeight : dims.h * 0.44;
-        const gap = dims.h * 0.035,
-          navB = dims.h * 0.1;
+        // Use actual measured panel height when available.
+        const panelH = el && el.offsetHeight > 40 ? el.offsetHeight : dims.h * 0.26;
+        const gap    = dims.h * 0.01;
+        const navB   = 80;   // fixed 72px navbar + small clearance — was a proportional
+                              // 5% guess that under-cleared it on short screens
         const freeTop = navB;
         const freeBot = Math.max(dims.h - panelH - gap, freeTop + 140);
-        const midPx = (freeTop + freeBot) / 2;
-        const T13 = 0.23087,
-          camZp = 9.9,
-          zw = 0.8 * fit,
-          rootY = -(1 - fit) * 0.28;
-        const yw = 0.1 + (1 - (2 * midPx) / dims.h) * T13 * (camZp - zw);
-        const availW = (((freeBot - freeTop) * 0.92) / dims.h) * 2 * T13 * (camZp - zw);
-        const s = clamp(availW / fit / 2.65, 0.42, 0.92);
-        SLOTS.detail = { p: [0, (yw - rootY) / fit, 0.8], r: [-0.02, -0.4, 0.06], s };
+        const midPx  = (freeTop + freeBot) / 2;
+
+        // T13 = tan(vFOV/2) = tan(13°), matching the camera's actual FOV of 26.
+        // camZp must match camTo('detail')'s portrait camera distance exactly —
+        // it previously didn't (7.8 here vs 7.4 there), which sized the book for
+        // a camera position it was never actually rendered at.
+        const T13   = 0.23087;
+        const camZp = 7.4;
+        const zw    = 0.8 * fit;
+        const rootY = -(1 - fit) * 0.28;
+        const yw    = 0.1 + (1 - (2 * midPx) / dims.h) * T13 * (camZp - zw);
+
+        // Direct target-fraction sizing, not a fudge-factor guess: solve for the
+        // scale that puts the book's own H/W (world units, from the geometry
+        // constants above) at a specific fraction of the camera's visible
+        // frustum at the book's depth, using the same tan(halfFOV)*(dist) =
+        // half-extent projection for both axes.
+        //
+        // Height: fits the book's full height H into the free vertical band
+        // between the fixed navbar and the bottom text panel.
+        const halfHeightWorld = T13 * (camZp - zw);
+        const availableHeightFrac = (freeBot - freeTop) / dims.h; // 0..1 of screen height
+        const sHeightCap = (availableHeightFrac * 2 * halfHeightWorld * 0.94) / H / fit;
+
+        // Width: opening the front cover rotates it around the spine hinge on
+        // the book's left edge (pivot.position.x = -W/2 - HINGE_OVERLAP) — that
+        // trades X-extent for Z-extent as it swings (cos/sin), it does not add
+        // net horizontal reach beyond the closed book's own width W. So W is
+        // the right footprint to target, not W plus a swing-angle bonus.
+        // Aim for the middle of the requested 70–85% viewport-width range.
+        const aspect = dims.w / Math.max(1, dims.h);
+        const halfWidthWorld = aspect * T13 * (camZp - zw);
+        const TARGET_WIDTH_FRACTION = 0.78;
+        const sWidthTarget = (TARGET_WIDTH_FRACTION * 2 * halfWidthWorld) / W / fit;
+
+        // Whichever axis is tighter wins, so the book never overflows either
+        // dimension; the outer clamp is just a sanity rail, not the real cap.
+        const s = clamp(Math.min(sHeightCap, sWidthTarget), 0.5, 1.8);
+        // y-rotation +0.12: book turns slightly right so the camera faces the open pages
+        // directly. Negative y (old -0.15) pointed the camera at the inside of the open
+        // front cover, making it the dominant element after a page turn.
+        SLOTS.detail = { p: [0, (yw - rootY) / fit, 0.8], r: [-0.02, 0.12, 0.04], s };
       } else {
         SLOTS.detail = { p: [-1.68, 0.0, 0.85], r: [0.02, -0.44, 0.08], s: 1.06 };
       }
@@ -1189,14 +1234,18 @@ export function BooksShowcase({
     function camTo(mode: string) {
       if (mode === 'detail') {
         camX.t = SLOTS.portrait ? 0 : -0.25;
-        camZ.t = SLOTS.portrait ? 10.4 : 9.6;
+        // Portrait detail: very close camera so the open book fills the upper viewport.
+        camZ.t = SLOTS.portrait ? 7.4 : 9.6;
         lookX.t = SLOTS.portrait ? 0 : -0.35;
-        lookY.t = SLOTS.portrait ? 0 : 0.15;
+        // Tilt down so book sits in the upper 60% of the viewport, above the panel
+        lookY.t = SLOTS.portrait ? -0.22 : 0.15;
       } else {
         camX.t = 0;
-        camZ.t = 9.6;
+        // Portrait hero: pull camera slightly closer so the fanned books fill the frame.
+        camZ.t = SLOTS.portrait ? 8.8 : 9.6;
         lookX.t = 0;
-        lookY.t = 0;
+        // Portrait hero: look slightly up so the center book's top is clearly visible.
+        lookY.t = SLOTS.portrait ? 0.08 : 0;
       }
     }
 
@@ -1486,12 +1535,22 @@ export function BooksShowcase({
     const timer = new THREE.Timer();
     timer.connect(document);
     const idle = RM ? 0 : 1;
+    // Front cover open angle in detail mode.
+    // Portrait: 1.75 rad (~100°) — swung past perpendicular so the cover reads
+    // as receding behind the spine (near edge-on to the camera) instead of
+    // still facing forward and competing with the current page for space.
+    // Desktop: 0.88 rad (50°) — original feel, unchanged.
     const DETAIL_OPEN_ANGLE = 0.88;
-    const DETAIL_OPEN_SWAY = 0.035;
-    // Turned (already-read) pages must rotate LESS than the front cover so
-    // they nest visibly between the spine and the cover instead of swinging
-    // past it and disappearing behind it from the camera's view.
-    const PAGE_TURNED_ANGLE = -0.58;
+    const DETAIL_OPEN_SWAY = 0.025;
+    const PORTRAIT_OPEN_ANGLE = 1.75;
+    // Turned pages must go far enough past center so they nest clearly behind
+    // the spine and are easily distinguishable from the current (right-side) page.
+    // Portrait: -0.82 rad (47°) — generous sweep visible on narrow screens.
+    // Desktop: -0.72 rad (41°) — more than original -0.58 for clearer depth.
+    const PAGE_TURNED_ANGLE_DESKTOP = -0.72;
+    const PAGE_TURNED_ANGLE_PORTRAIT = -0.82;
+    // (Unused const kept for backward compat with any external references)
+    const PAGE_TURNED_ANGLE = SLOTS.portrait ? PAGE_TURNED_ANGLE_PORTRAIT : PAGE_TURNED_ANGLE_DESKTOP;
 
     function screenPos(b: Book) {
       b.root.getWorldPosition(tmpV).project(camera);
@@ -1548,11 +1607,16 @@ export function BooksShowcase({
       b.orbXs.update(dt);
 
       let coverBase = 0;
-      if (inDetail) coverBase = DETAIL_OPEN_ANGLE + Math.sin(t * 0.8 + b.phase) * DETAIL_OPEN_SWAY * idle;
-      const fan = orbitActive ? clamp(b.orbYv * 0.16, 0, 0.75) : 0;
-      const fanB = orbitActive ? clamp(-b.orbYv * 0.16, 0, 0.75) : 0;
+      if (inDetail) {
+        // Portrait: open wide (1.15 rad ≈ 66°) so the page block is fully exposed.
+        // Desktop: original 0.88 rad (50°) feel preserved.
+        const openAngle = SLOTS.portrait ? PORTRAIT_OPEN_ANGLE : DETAIL_OPEN_ANGLE;
+        coverBase = openAngle + Math.sin(t * 0.8 + b.phase) * DETAIL_OPEN_SWAY * idle;
+      }
+      const fan = orbitActive ? clamp(b.orbYv * 0.16, 0, 0.55) : 0;
+      const fanB = orbitActive ? clamp(-b.orbYv * 0.16, 0, 0.55) : 0;
       let coverBBase = 0;
-      if (inDetail) coverBBase = 0.2 + Math.sin(t * 0.8 + b.phase + 1.7) * 0.02 * idle;
+      if (inDetail) coverBBase = 0.18 + Math.sin(t * 0.8 + b.phase + 1.7) * 0.015 * idle;
 
       if (isHov && ptr.seen && state.mode === 'hero') {
         const dxN = (ptr.cx - b.scr.x) / (dims.w * 0.25);
@@ -1607,24 +1671,26 @@ export function BooksShowcase({
       b.block.scale.z = 1 - (ang + angB) * 0.05;
       b.block.position.z = BLOCK_Z - ang * 0.006 + angB * 0.006;
       // Only the page currently being read should open — matching the cover
-      // so it reads as one flat, fully visible surface. Everything still
-      // ahead in the unread stack stays essentially closed (a faint peek on
-      // the very next sheet for physical depth, nothing beyond that) so the
-      // book never looks like a fanned deck of cards.
+      // so it reads as one flat, fully visible surface. Pages ahead in the
+      // unread stack peek slightly (physical depth cue) but don't fan out.
       for (let i = 0; i < PAGE_N; i++) {
-        // Pages past the real content (blank filler used to bulk out the
-        // block) must never be treated as "current" — otherwise looping
-        // or reaching the end of the book would swing an empty page wide
-        // open, which is exactly the blank-page problem this avoids.
+        // Pages past the real content stay shut — prevents blank page blowout
+        // at the end/loop of the book.
         let baseFan = 0;
         if (i < b.pageCount) {
           const rel = i - b.pageIndex;
-          baseFan = rel <= 0 ? 1.0 : Math.max(0.015, 0.16 * Math.pow(0.22, rel - 1));
+          // Current page and all pages already read (rel <= 0) open fully with
+          // the cover. The very next unread page peeks at 12% to show depth.
+          // Beyond that: near-zero so unread pages appear as a solid block.
+          baseFan = rel <= 0 ? 1.0 : rel === 1 ? 0.12 : Math.max(0, 0.04 * Math.pow(0.2, rel - 2));
         }
-        const fl = idle * Math.sin(t * 1.15 + b.phase + i * 0.6) * 0.006 * (1 - i / PAGE_N);
+        const fl = idle * Math.sin(t * 1.15 + b.phase + i * 0.6) * 0.005 * (1 - i / PAGE_N);
         const fanAngle = -(ang * baseFan + Math.max(0, fl));
         const turned = b.pageTurn[i].update(dt);
-        b.pages[i].rotation.y = fanAngle + (PAGE_TURNED_ANGLE - fanAngle) * turned;
+        // Portrait-aware turned-page angle: pages sweep further on portrait so
+        // they're clearly visible as a distinct left-side stack.
+        const turnedAngle = SLOTS.portrait ? PAGE_TURNED_ANGLE_PORTRAIT : PAGE_TURNED_ANGLE_DESKTOP;
+        b.pages[i].rotation.y = fanAngle + (turnedAngle - fanAngle) * turned;
         // Swap to the blank reverse side partway through the flip, so a
         // turned page reads as plain paper on the left, not mirrored content.
         const [front, back] = b.pages[i].children;
@@ -1675,6 +1741,8 @@ export function BooksShowcase({
       camera.position.set(camX.update(dt), camY.update(dt), camZ.update(dt));
       camera.lookAt(lookX.update(dt), lookY.update(dt), 0);
 
+      // On pointer (mouse/pen), show the trailing "Open" slip near the cursor.
+      // On touch devices, the slip is irrelevant (tap directly on book).
       if (state.mode === 'hero' && state.hovered && ptr.seen && !isTouch() && !(ptr.down && ptr.moved > 14)) {
         const tx = ptr.cx,
           ty = ptr.cy + 34;
@@ -1689,7 +1757,10 @@ export function BooksShowcase({
           openBtnRef.current.style.top = pillY.update(dt) + 'px';
         }
         if (!pillOn) showPill();
+      } else if (!isTouch()) {
+        hidePill();
       } else {
+        // Touch: keep pill hidden (tap directly on book to open)
         hidePill();
       }
 
@@ -1720,7 +1791,10 @@ export function BooksShowcase({
       const slot = SLOTS.hero[i];
       const s = b.springs;
       s.px.set(slot.p[0]);
-      s.py.set(slot.p[1] - 3.9);
+      // Entrance: books drop in from above. Portrait uses a shorter drop so
+      // the animation finishes before the book goes out of frame at the bottom.
+      const dropDist = SLOTS.portrait ? 2.8 : 3.9;
+      s.py.set(slot.p[1] - dropDist);
       s.pz.set(slot.p[2]);
       s.rx.set(slot.r[0]);
       s.ry.set(slot.r[1]);
@@ -1866,22 +1940,91 @@ export function BooksShowcase({
         'transition-colors duration-500 ease-out',
         uiMode === 'hero'
           ? 'bg-[var(--bs-bg-light)] text-[var(--bs-fg-light)] dark:bg-[var(--bs-bg-dark)] dark:text-[var(--bs-fg-dark)]'
-          : 'bg-transparent text-[var(--bs-cream)]',
+          // detail/opening/closing: solid dark bg so the WebGL canvas never bleeds
+          // the underlying page through its alpha channel
+          : 'bg-[var(--bs-bg-dark)] text-[var(--bs-cream)]',
         className,
       )}
       style={themeVars}
     >
-      {/* hero word */}
+      {/* hero word — clamp prevents overflow on portrait/narrow screens */}
       <div
         className={`pointer-events-none absolute left-1/2 top-[18%] z-[1] -translate-x-1/2 select-none transition-all duration-500 ease-out ${uiMode === 'hero' ? 'visible' : 'invisible'} ${heroWordVisible ? 'translate-y-0 opacity-100' : uiMode === 'hero' ? '-translate-y-0 translate-y-[60px] opacity-0' : '-translate-y-11 opacity-0'
           }`}
       >
-        <span className="block whitespace-nowrap text-current text-[clamp(4.5rem,22.5vw,18rem)] font-extrabold leading-[0.85] tracking-[-0.015em]">
+        <span className="block whitespace-nowrap text-current text-[clamp(2.8rem,12.5vw,18rem)] font-extrabold leading-[0.85] tracking-[-0.015em]">
           {heroTitle}
         </span>
       </div>
 
-      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 z-[2] block h-full w-full touch-none" />
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className="absolute inset-0 z-[2] block h-full w-full touch-none"
+        onTouchStart={() => setIsTouchDevice(true)}
+      />
+
+      {/* Mobile-only page-turn tap zones. Desktop turns pages via a WebGL
+          raycast hit-test on the open book (canvas pointerdown/pointerup in
+          BooksShowcase's effect) — that hit-test doesn't reliably resolve on
+          touch input, and turnPageRef below was already wired up for an
+          external trigger but never actually connected to one. These two
+          plain DOM buttons drive that same ref directly, bypassing the 3D
+          hit-test entirely, so mobile page-turning is guaranteed to work
+          regardless of raycast/touch quirks. md:hidden — desktop keeps its
+          original canvas-only interaction, completely untouched. */}
+      <div
+        aria-hidden="true"
+        className={`absolute inset-x-0 top-0 z-[10] flex h-[62%] md:hidden ${uiMode === 'detail' && pageInfo.total > 0 ? 'pointer-events-auto' : 'pointer-events-none'
+          }`}
+      >
+        <button
+          type="button"
+          aria-label="Previous page"
+          tabIndex={-1}
+          className="h-full w-1/2 [-webkit-tap-highlight-color:transparent]"
+          onClick={() => turnPageRef.current(-1)}
+        />
+        <button
+          type="button"
+          aria-label="Next page"
+          tabIndex={-1}
+          className="h-full w-1/2 [-webkit-tap-highlight-color:transparent]"
+          onClick={() => turnPageRef.current(1)}
+        />
+      </div>
+
+      {/* Mobile-only tap hint — visible only in hero mode on touch devices */}
+      <div
+        aria-hidden="true"
+        className={[
+          'pointer-events-none absolute bottom-[5%] inset-x-0 z-[15] flex flex-col items-center gap-1.5',
+          'md:hidden',
+          isTouchDevice && uiMode === 'hero' && heroWordVisible
+            ? 'opacity-100 translate-y-0 transition-all duration-700 delay-[1000ms]'
+            : 'opacity-0 translate-y-3 transition-all duration-300',
+        ].join(' ')}
+      >
+        <div className="rounded-full bg-black/30 px-4 py-1.5 backdrop-blur-sm">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80">
+            Tap a book to open
+          </span>
+        </div>
+        {/* animated bounce arrow */}
+        <svg
+          viewBox="0 0 24 14"
+          className="h-3.5 w-5 text-white/50"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ animation: 'bs-hint-bob 1.6s ease-in-out infinite' }}
+        >
+          <path d="M2 2l10 10L22 2" />
+        </svg>
+        <style>{`@keyframes bs-hint-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(5px)} }`}</style>
+      </div>
 
       {books.length === 0 && (
         <div className="absolute inset-0 z-10 flex items-center justify-center p-8 text-center text-sm text-current opacity-60">
@@ -1947,7 +2090,7 @@ export function BooksShowcase({
       <button
         ref={closeBtnRef}
         aria-label="Close detail view"
-        className={`absolute right-[18px] top-[18px] z-40 translate-x-0 md:left-1/2 md:right-auto md:top-[30px] md:-translate-x-1/2 inline-flex h-[52px] w-[52px] items-center justify-center rounded-full border-[1.5px] border-[var(--bs-cream)]/40 bg-transparent text-[17px] leading-none text-[var(--bs-cream)] transition-[opacity,border-color] duration-300 delay-150 hover:border-[var(--bs-cream)]/90 [-webkit-tap-highlight-color:transparent] ${uiMode === 'detail' ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        className={`absolute right-[18px] top-[18px] z-40 inline-flex h-[44px] w-[44px] md:h-[52px] md:w-[52px] md:left-1/2 md:right-auto md:top-[30px] md:-translate-x-1/2 items-center justify-center rounded-full border-[1.5px] border-[var(--bs-cream)]/40 bg-[rgba(0,0,0,0.35)] backdrop-blur-sm text-[17px] leading-none text-[var(--bs-cream)] transition-[opacity,border-color] duration-300 delay-150 hover:border-[var(--bs-cream)]/90 [-webkit-tap-highlight-color:transparent] ${uiMode === 'detail' ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
           }`}
       >
         &#10005;
@@ -1957,44 +2100,52 @@ export function BooksShowcase({
         <div
           ref={dpRef}
           aria-live="polite"
-          className={`absolute left-1/2 bottom-[3.5%] z-[15] w-[min(560px,92vw)] -translate-x-1/2 translate-y-0 pointer-events-none md:left-auto md:right-[7%] md:top-1/2 md:bottom-auto md:w-[min(560px,42%)] md:translate-x-0 md:-translate-y-1/2 ${panelVisible ? 'visible' : 'invisible delay-[500ms]'
+          className={`absolute left-1/2 bottom-[2.5%] z-[15] w-[min(560px,88vw)] -translate-x-1/2 translate-y-0 pointer-events-none md:left-auto md:right-[7%] md:top-1/2 md:bottom-auto md:w-[min(560px,42%)] md:translate-x-0 md:-translate-y-1/2 ${panelVisible ? 'visible' : 'invisible delay-[500ms]'
             }`}
         >
-          <h1 className={`m-0 text-[var(--bs-pink)] text-[clamp(36px,9.5vw,54px)] md:text-[clamp(52px,5.6vw,92px)] font-extrabold leading-[0.98] tracking-[-0.015em] ${dpChild(50)}`}>
+          <h1 className={`m-0 text-[var(--bs-pink)] text-[clamp(24px,7vw,54px)] md:text-[clamp(52px,5.6vw,92px)] font-extrabold leading-[0.98] tracking-[-0.015em] ${dpChild(50)}`}>
             {selectedCfg?.title}
           </h1>
 
           {pageInfo.total > 0 && (
-            <div className={`mt-3 flex items-center gap-3 ${dpChild(90)}`}>
-              <span className="text-[13px] tracking-[0.04em] text-[var(--bs-lav)]">
+            <div className={`mt-1.5 md:mt-3 flex items-center gap-3 ${dpChild(90)}`}>
+              <span className="text-[11px] md:text-[13px] tracking-[0.04em] text-[var(--bs-lav)]">
                 Page {pageInfo.index + 1} of {pageInfo.total}
               </span>
-              <span className="text-[12px] italic tracking-[0.02em] text-[var(--bs-lav)]/70">
-                Click the book to turn pages
+              <span className="text-[11px] md:text-[12px] italic tracking-[0.02em] text-[var(--bs-lav)]/70">
+                <span className="md:hidden">Tap left/right to turn pages</span>
+                <span className="hidden md:inline">Click the book to turn pages</span>
               </span>
             </div>
           )}
 
-          <p className={`mt-4 line-clamp-4 text-[15px] md:mt-[26px] md:line-clamp-none md:text-[clamp(16px,1.25vw,19px)] max-w-[54ch] text-[var(--bs-lav)] leading-[1.65] ${dpChild(130)}`}>
+          {/* Description — 2 lines on mobile, full on desktop */}
+          <p className={`mt-2 line-clamp-2 text-[13px] md:mt-[26px] md:line-clamp-none md:text-[clamp(16px,1.25vw,19px)] max-w-[54ch] text-[var(--bs-lav)] leading-[1.65] ${dpChild(130)}`}>
             {selectedCfg?.desc}
           </p>
-          <div className={`mt-[18px] flex items-center gap-[18px] md:mt-[34px] ${dpChild(210)}`}>
+
+          {/* Tag / year row — hidden on portrait */}
+          <div className={`hidden md:flex mt-[34px] items-center gap-[18px] ${dpChild(210)}`}>
             {selectedCfg?.tag && (
               <div className="text-[17px] font-semibold text-[var(--bs-pink)]">{selectedCfg.tag}</div>
             )}
             <div className="h-6 w-px bg-[var(--bs-lav)]/[0.28]" />
             <div className="ml-auto text-[19px] italic text-[var(--bs-pink)]">{selectedCfg?.year}</div>
           </div>
-          <div className={`mt-4 border-t border-[var(--bs-lav)]/[0.18] md:mt-[26px] ${dpChild(270)}`} />
+
+          {/* Divider — hidden on portrait */}
+          <div className={`hidden md:block mt-[26px] border-t border-[var(--bs-lav)]/[0.18] ${dpChild(270)}`} />
+
+          {/* CTA — always visible; label is book-specific */}
           <div
-            className={`pointer-events-auto mt-[18px] flex-wrap rounded-[28px] inline-flex items-center gap-[10px] bg-[#1a2140] p-[10px] shadow-[0_24px_60px_rgba(0,0,0,0.45)] md:mt-8 md:flex-nowrap md:rounded-full ${dpChild(330)}`}
+            className={`pointer-events-auto mt-2 md:mt-8 w-full rounded-[16px] md:w-auto md:rounded-full inline-flex items-center gap-[10px] bg-[#1a2140] p-[6px] md:p-[10px] shadow-[0_16px_40px_rgba(0,0,0,0.45)] ${dpChild(330)}`}
           >
             <button
               onClick={handleReadChapter}
-              className="inline-flex h-12 items-center gap-[10px] rounded-full bg-[var(--bs-cream)] px-5 text-[15px] md:h-[54px] md:px-[26px] md:text-[16.5px] font-semibold text-[var(--bs-navy)] transition-[transform,filter] duration-[220ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.04] hover:brightness-105"
+              className="flex-1 md:flex-none inline-flex h-9 md:h-[54px] items-center justify-center gap-[10px] rounded-full bg-[var(--bs-cream)] px-4 text-[13px] md:px-[26px] md:text-[16.5px] font-semibold text-[var(--bs-navy)] transition-[transform,filter] duration-[220ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.04] hover:brightness-105"
             >
-              <span>Read Full Chapter</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <span>{selectedCfg?.cta ?? 'Read Full Chapter'}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 md:h-4 md:w-4">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             </button>

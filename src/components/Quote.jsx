@@ -24,7 +24,7 @@ export default function Quote() {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 1.4, delay: 1.44, ease: [0.22, 1, 0.36, 1] }}
       style={{ x, y }}
-      className="mt-8 w-full px-6 text-left md:absolute md:right-[-1%] md:top-[30%] md:z-20 md:mt-0 md:w-[200px] md:px-0 lg:right-[0%] lg:top-[32%] lg:w-[210px]"
+      className="mt-8 w-full px-6 text-left md:absolute md:right-[2%] md:top-[6%] md:z-20 md:mt-0 md:w-[190px] md:rounded-2xl md:bg-bg/80 md:p-4 md:px-4 md:shadow-soft md:backdrop-blur-sm lg:right-[0%] lg:top-[32%] lg:w-[210px]"
     >
       <span className="block font-serif text-[48px] leading-[1] text-accent">&ldquo;</span>
       <p

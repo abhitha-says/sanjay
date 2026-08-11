@@ -4,7 +4,7 @@ const ease = [0.22, 1, 0.36, 1]
 
 export default function HeroContent() {
   return (
-    <div className="relative z-20 flex h-auto flex-col justify-start px-6 py-4 md:h-full md:justify-center md:px-0 md:pl-20 md:pt-0 md:translate-x-[30px] lg:max-w-[580px]">
+    <div className="relative z-20 flex h-auto flex-col justify-start px-6 pb-4 pt-8 sm:pt-10 md:h-full md:justify-center md:px-0 md:pl-20 md:pt-0 md:translate-x-[30px] lg:max-w-[580px]">
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 1.03 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -35,7 +35,7 @@ export default function HeroContent() {
         initial={{ opacity: 0, y: 30, scale: 1.03 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.4, delay: 0.96, ease }}
-        className="mt-3 font-sans text-[18px] leading-[1.6] text-secondary"
+        className="mt-3 font-sans text-[15px] leading-[1.6] text-secondary sm:text-[16px] md:text-[18px]"
       >
         <div>Founder &ndash; Aryavarta Heritage Foundation</div>
         <div>Chairman &ndash; GTC Group</div>
@@ -52,7 +52,7 @@ export default function HeroContent() {
         initial={{ opacity: 0, y: 30, scale: 1.03 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.4, delay: 1.2, ease }}
-        className="mt-3 max-w-[480px] font-sans text-[18px] leading-[30px] text-secondary"
+        className="mt-3 max-w-[480px] font-sans text-[15px] leading-[24px] text-secondary sm:text-[16px] sm:leading-[27px] md:text-[18px] md:leading-[30px]"
       >
         A visionary leader with a deep commitment to heritage, education, and
         ethical leadership. Driving impact through values and vision.

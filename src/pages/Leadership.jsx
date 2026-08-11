@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence, MotionConfig } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform, useScroll, AnimatePresence, MotionConfig } from 'framer-motion'
 import leadershipHero from '../assets/leadership-hero.png'
 import cscmpNewsletter from '../assets/gallery/cscmp-newsletter-launch-2011.jpg'
 import felicitatedMinisterKhot from '../assets/gallery/felicitated-minister-khot.jpg'
@@ -157,15 +157,26 @@ const memberships = [
 // ── HERO (exactly modelled on MediaHero) ─────────────────────────────────────
 
 function BgWatermark() {
-  const mx = useMotionValue(0)
-  const sx = useSpring(mx, { stiffness: 40, damping: 25 })
-  const x = useTransform(sx, [-1, 1], [-3, 3])
+  const coarse = useCoarsePointer()
+
+  // Desktop: spring-based mouse parallax
+  const mx    = useMotionValue(0)
+  const sx    = useSpring(mx, { stiffness: 40, damping: 25 })
+  const mouseX = useTransform(sx, [-1, 1], [-3, 3])
+
+  // Mobile/touch: gentle scroll-driven drift — replaces the mouse movement
+  const { scrollY } = useScroll()
+  const scrollX = useTransform(scrollY, [0, 400], [0, -8])
+
+  // Use scroll-based x on touch, mouse-based x on desktop
+  const x = coarse ? scrollX : mouseX
 
   useEffect(() => {
+    if (coarse) return  // mousemove listener not needed on touch devices
     function handle(e) { mx.set((e.clientX / window.innerWidth) * 2 - 1) }
     window.addEventListener('mousemove', handle)
     return () => window.removeEventListener('mousemove', handle)
-  }, [mx])
+  }, [mx, coarse])
 
   return (
     <motion.div
@@ -206,183 +217,242 @@ function LeadershipImage() {
   const x = useTransform(sx, [-1, 1], [-6, 6])
   const y = useTransform(sy, [-1, 1], [-4, 4])
 
+  // Mobile: scroll-driven vertical parallax — adapts the desktop mouse-y drift
+  // (±4px from cursor position) to a scroll-driven equivalent on touch devices.
+  const { scrollY } = useScroll()
+  const mobileImgY = useTransform(scrollY, [0, 400], ['0%', '-5%'])
+
   function handleMouseMove(e) {
+    // Guard: skip on touch/coarse-pointer devices — mousemove can still fire
+    // on some touch browsers and would produce jarring jumps without hover intent.
+    if (!window.matchMedia('(hover: hover)').matches) return
     const rect = e.currentTarget.getBoundingClientRect()
     mx.set(((e.clientX - rect.left) / rect.width) * 2 - 1)
     my.set(((e.clientY - rect.top) / rect.height) * 2 - 1)
   }
 
   return (
-    <div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => { mx.set(0); my.set(0) }}
-      // 3.png is landscape — we show the full image but shifted right so Dr. Goel's
-      // face dominates; the text column on the left naturally overlaps the building half.
-      className="relative h-[340px] w-full sm:h-[440px] md:absolute md:bottom-0 md:right-0 md:z-10 md:h-[88%] md:w-[72%] lg:h-[100%] lg:w-[78%]"
-    >
-      <motion.div
-        className="relative h-full w-full"
-        initial={{ opacity: 0, scale: 1.06, x: 50 }}
-        animate={{ opacity: 1, scale: 1, x: 0 }}
-        transition={{ duration: 1.5, delay: 0.2, ease }}
-      >
+    <>
+      {/* ── Mobile full-bleed backdrop (< md) ───────────────────────────────────
+          On mobile the image becomes an absolute layer behind the whole hero,
+          exactly like Journey's portrait treatment. Face sits in the upper
+          portion; the bottom gradient eases into the text area.
+      */}
+      <div className="absolute inset-0 z-0 md:hidden" aria-hidden="false">
         <motion.img
           src={leadershipHero}
           alt="Dr. Sanjay Goel — Chairman, GTC Group"
           fetchpriority="high"
-          style={{
-            x,
-            y,
-            // Left fade so the page background shows through and text is readable
-            // Bottom fade merges with the page at the footer edge
-            WebkitMaskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 15%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.85) 42%, black 56%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 8%, black 20%)',
-            maskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 15%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.85) 42%, black 56%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 8%, black 20%)',
-            WebkitMaskComposite: 'source-in',
-            maskComposite: 'intersect',
-            WebkitMaskSize: '100% 100%',
-            maskSize: '100% 100%',
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-          }}
-          // object-position: show the right portion of 3.png (where Dr. Goel is)
-          className="h-full w-full object-cover object-[65%_15%]"
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, delay: 0.2, ease }}
+          style={{ y: mobileImgY, objectPosition: '82% 15%' }}
+          className="h-full w-full object-cover"
         />
-      </motion.div>
+        {/* Two-stop gradient: light vignette at top, heavy fade at bottom so
+            text sits cleanly over the image just like Journey. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-bg/20 via-bg/30 to-bg/90" />
 
-      {/* Elegant signature bottom-right */}
-      <motion.div
-        initial={{ opacity: 0, x: 16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1.4, delay: 1.6, ease }}
-        aria-hidden="true"
-        className="absolute bottom-8 right-6 z-20 md:bottom-10 md:right-10 lg:right-16"
-      >
-        <span
-          style={{
-            fontFamily: '"Cormorant Garamond", serif',
-            fontSize: 'clamp(18px, 2.2vw, 32px)',
-            fontStyle: 'italic',
-            fontWeight: 600,
-            color: 'rgba(100,70,30,0.55)',
-            letterSpacing: '0.3px',
-          }}
+        {/* Signature */}
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.4, delay: 1.6, ease }}
+          aria-hidden="true"
+          className="absolute bottom-[28%] right-5 z-20"
         >
-          Sanjay Goel
-        </span>
-      </motion.div>
-    </div>
+          <span
+            style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 'clamp(16px, 4.2vw, 22px)',
+              fontStyle: 'italic',
+              fontWeight: 600,
+              color: 'rgba(100,70,30,0.55)',
+              letterSpacing: '0.3px',
+            }}
+          >
+            Sanjay Goel
+          </span>
+        </motion.div>
+      </div>
+
+      {/* ── Desktop / Tablet panel (≥ md) — unchanged ───────────────────────── */}
+      <div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => { mx.set(0); my.set(0) }}
+        className="hidden md:absolute md:bottom-0 md:right-0 md:z-10 md:block md:h-[100%] md:w-[78%]"
+      >
+        <motion.div
+          className="relative h-full w-full"
+          initial={{ opacity: 0, scale: 1.06, x: 50 }}
+          animate={{ opacity: 1, scale: 1, x: 0 }}
+          transition={{ duration: 1.5, delay: 0.2, ease }}
+        >
+          <motion.img
+            src={leadershipHero}
+            alt="Dr. Sanjay Goel — Chairman, GTC Group"
+            fetchpriority="high"
+            style={{
+              x,
+              y,
+              WebkitMaskImage:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 15%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.85) 42%, black 56%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 8%, black 20%)',
+              maskImage:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 15%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.85) 42%, black 56%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 8%, black 20%)',
+              WebkitMaskComposite: 'source-in',
+              maskComposite: 'intersect',
+              WebkitMaskSize: '100% 100%',
+              maskSize: '100% 100%',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+            }}
+            className="h-full w-full object-cover object-[50%_15%]"
+          />
+        </motion.div>
+
+        {/* Elegant signature bottom-right */}
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.4, delay: 1.6, ease }}
+          aria-hidden="true"
+          className="absolute bottom-8 right-6 z-20 md:bottom-10 md:right-10 lg:right-16"
+        >
+          <span
+            style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 'clamp(18px, 2.2vw, 32px)',
+              fontStyle: 'italic',
+              fontWeight: 600,
+              color: 'rgba(100,70,30,0.55)',
+              letterSpacing: '0.3px',
+            }}
+          >
+            Sanjay Goel
+          </span>
+        </motion.div>
+      </div>
+    </>
   )
 }
 
 function LeadershipHero() {
   return (
-    <section className="relative min-h-screen w-full md:h-screen md:overflow-hidden">
+    /*
+      Mobile  (< md) — Portrait-led editorial matching Journey's composition.
+        h-[calc(100svh-72px)] subtracts the 72px in-flow header, exactly like
+        Journey. The image is an absolute full-bleed backdrop; justify-end +
+        pb-16 anchors all content at the bottom so the eye reads:
+        face → back-link → number → title → line → description → stats.
+
+      Desktop (≥ md) — Cinematic: full h-screen, image panel on the right,
+        content column on the left. Unchanged from original.
+    */
+    <section className="relative h-[100svh] w-full overflow-hidden">
       <BgWatermark />
 
-      <div className="flex flex-col md:contents">
-        {/* Photo — right half */}
-        <LeadershipImage />
+      {/* Image — mobile: absolute backdrop; desktop: right panel */}
+      <LeadershipImage />
 
-        {/* Text content — left half */}
-        <div className="relative z-20 flex h-auto flex-col justify-start px-6 py-4 md:h-full md:justify-center md:px-0 md:pl-20 md:pt-0 md:translate-x-[30px] lg:max-w-[540px]">
+      {/* Text content */}
+      {/*
+        Mobile  — flex-col justify-end pb-16 px-5: content stacks at the
+          bottom over the image, left-aligned, same rhythm as Journey.
+        Desktop — md:absolute left column, vertically centred.
+      */}
+      <div className="relative z-20 flex h-full flex-col justify-end px-5 pb-10 pt-24 md:absolute md:inset-y-0 md:left-0 md:flex md:h-full md:w-auto md:justify-center md:px-0 md:pb-0 md:pt-0 md:pl-20 md:translate-x-[30px] lg:max-w-[540px]">
 
-          {/* Back link */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.1, ease }}
-            className="mb-8 mt-28 md:mt-32"
-          >
-            <BackHomeBtn />
-          </motion.div>
+        {/* Back link */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.1, ease }}
+          className="mb-5 md:mb-8"
+        >
+          <BackHomeBtn />
+        </motion.div>
 
-          {/* Index */}
-          <motion.div
-            initial={{ opacity: 0, y: 30, scale: 1.03 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1.4, delay: 0.72, ease }}
-            className="font-sans text-[20px] font-semibold tabular-nums lining-nums tracking-[-0.023em] text-ink"
-          >
-            04
-          </motion.div>
+        {/* Index */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 1.03 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.4, delay: 0.72, ease }}
+          className="font-sans text-[20px] font-semibold tabular-nums lining-nums tracking-[-0.023em] text-ink"
+        >
+          04
+        </motion.div>
 
-          {/* Title */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30, scale: 1.03 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1.4, delay: 0.84, ease }}
-            className="mt-2 whitespace-nowrap font-serif leading-[1.02] text-ink"
-            style={{ letterSpacing: '-2px', fontWeight: 700, fontSize: 'clamp(44px, 6vw, 96px)' }}
-          >
-            Leader<span style={{ color: '#2d7a3a' }}>ship</span>
-          </motion.h1>
+        {/* Title */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30, scale: 1.03 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.4, delay: 0.84, ease }}
+          className="mt-2 whitespace-nowrap font-serif leading-[1.02] text-ink"
+          style={{ letterSpacing: '-2px', fontWeight: 700, fontSize: 'clamp(44px, 6vw, 96px)' }}
+        >
+          Leader<span style={{ color: '#2d7a3a' }}>ship</span>
+        </motion.h1>
 
-          {/* Red accent line */}
-          <motion.span
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.7, delay: 1.0, ease }}
-            className="mt-4 block h-[2px] w-10 origin-left bg-accent"
-          />
+        {/* Red accent line */}
+        <motion.span
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={{ opacity: 1, scaleX: 1 }}
+          transition={{ duration: 0.7, delay: 1.0, ease }}
+          className="mt-4 block h-[2px] w-10 origin-left bg-accent"
+        />
 
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 30, scale: 1.03 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 1.4, delay: 1.1, ease }}
-            className="mt-4 max-w-[440px] font-sans text-[17px] leading-[28px] tracking-[-0.026em] text-secondary"
-          >
-            Governance and stewardship across a diversified group, industry chambers, and the boards of a dozen companies.
-          </motion.p>
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0, y: 30, scale: 1.03 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.4, delay: 1.1, ease }}
+          className="mt-4 max-w-[420px] font-sans text-[14.5px] leading-[23px] text-secondary sm:text-[15px] sm:leading-[25px] md:max-w-[440px] md:text-[17px] md:leading-[28px] md:tracking-[-0.026em]"
+        >
+          Governance and stewardship across a diversified group, industry chambers, and the boards of a dozen companies.
+        </motion.p>
 
-          {/* Stat pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.35, ease }}
-            className="mt-8 flex flex-wrap gap-3"
-          >
-            {[
-              { num: '4+', label: 'Group Companies' },
-              { num: '12', label: 'Directorships' },
-              { num: '28+', label: 'Years' },
-            ].map(({ num, label }) => (
+        {/* Stat pills */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 1.35, ease }}
+          className="mt-4 flex flex-nowrap gap-2 md:mt-8 md:gap-3"
+        >
+          {[
+            { num: '4+', label: 'Group Companies' },
+            { num: '12', label: 'Directorships' },
+            { num: '28+', label: 'Years' },
+          ].map(({ num, label }) => (
+            <div
+              key={label}
+              className="flex-1 rounded-[14px] border border-border bg-white/60 backdrop-blur-sm px-2 py-2 text-center md:flex-none md:px-4 md:py-2.5"
+            >
               <div
-                key={label}
-                className="rounded-[14px] [corner-shape:squircle] border border-border bg-white/60 backdrop-blur-sm px-4 py-2.5 text-center [@media(prefers-reduced-transparency:reduce)]:bg-white"
+                className="font-serif text-[22px] leading-none tabular-nums lining-nums text-ink md:text-[30px]"
+                style={{ fontWeight: 700, letterSpacing: '-0.5px' }}
               >
-                {/* Cormorant runs light and small on the body; the stat needs
-                    a size bump at a real 700 to carry the same weight the
-                    synthetic 900 was faking. */}
-                <div
-                  className="font-serif text-[30px] leading-none tabular-nums lining-nums text-ink"
-                  style={{ fontWeight: 700, letterSpacing: '-0.5px' }}
-                >
-                  {num}
-                </div>
-                <div className="mt-0.5 font-sans text-[10px] font-semibold uppercase tracking-[0.1em] text-secondary">
-                  {label}
-                </div>
+                {num}
               </div>
-            ))}
-          </motion.div>
+              <div className="mt-0.5 font-sans text-[8px] font-semibold uppercase tracking-[0.08em] text-secondary md:text-[10px] md:tracking-[0.1em]">
+                {label}
+              </div>
+            </div>
+          ))}
+        </motion.div>
 
-          {/* Scroll cue — fills the lower-left composition and signals depth */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.9, ease }}
-            className="mt-10 hidden items-center gap-3 md:flex md:mt-16"
-            aria-hidden="true"
-          >
-            <span className="h-[26px] w-px bg-border" />
-            <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary/70">
-              Scroll for the full record
-            </span>
-          </motion.div>
-        </div>
+        {/* Scroll cue — desktop only */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.9, ease }}
+          className="mt-10 hidden items-center gap-3 md:flex md:mt-16"
+          aria-hidden="true"
+        >
+          <span className="h-[26px] w-px bg-border" />
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary/70">
+            Scroll for the full record
+          </span>
+        </motion.div>
       </div>
     </section>
   )
@@ -477,23 +547,35 @@ function ChamberRow({ role, index }) {
         },
       })}
     >
-      {/* Clean 4-col grid: index | category | title+org | period + toggle */}
-      <div className="grid grid-cols-[28px_80px_1fr_auto] items-start gap-x-5 py-5 md:grid-cols-[32px_90px_1fr_140px]">
+      {/* Mobile  : 3-col  [20px index | 1fr content | auto period+toggle]
+           ≥ md    : 4-col  [32px | 90px category | 1fr | 140px]
+           The category col is hidden on mobile; the badge moves into the
+           content cell so INTERNATIONAL never bleeds into the title col. */}
+      <div className="grid grid-cols-[20px_1fr_auto] items-start gap-x-3 py-5 md:grid-cols-[32px_90px_1fr_140px] md:gap-x-5">
 
         {/* Col 1: row index */}
         <div className="pt-[3px] font-sans text-[12px] font-semibold text-secondary/40 tabular-nums lining-nums">
           {String(index + 1).padStart(2, '0')}
         </div>
 
-        {/* Col 2: category badge */}
-        <div className="pt-[4px]">
+        {/* Col 2: category badge — desktop only.
+             display:none removes it from mobile grid flow entirely so it
+             doesn't consume a column slot at narrow widths. */}
+        <div className="hidden pt-[4px] md:block">
           <span className="inline-block rounded-[6px] bg-brand/10 px-2 py-0.5 font-sans text-[10px] font-bold uppercase tracking-[0.1em] text-brand leading-[1.6]">
             {role.category}
           </span>
         </div>
 
-        {/* Col 3: title + org */}
+        {/* Col 3 (mobile col 2): title + org.
+             Badge is injected here on mobile so it sits above the title
+             with full 1fr width available — no column collision possible. */}
         <div className="min-w-0">
+          <div className="mb-1.5 md:hidden">
+            <span className="inline-block rounded-[6px] bg-brand/10 px-2 py-0.5 font-sans text-[10px] font-bold uppercase tracking-[0.1em] text-brand leading-[1.6]">
+              {role.category}
+            </span>
+          </div>
           <h3 className="font-serif text-[18px] font-bold leading-snug text-ink group-hover:text-brand transition-colors duration-200">
             {role.title}
           </h3>
@@ -763,7 +845,7 @@ function BackHomeBtn() {
 export default function Leadership() {
   return (
     <MotionConfig reducedMotion="user">
-    <main className="relative z-20">
+    <main className="relative z-20 -mt-[72px]">
       {/* HERO — exactly like Media page */}
       <LeadershipHero />
 

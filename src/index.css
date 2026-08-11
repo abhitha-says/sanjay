@@ -25,3 +25,46 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ── Responsive gutter utility ─────────────────────────────────────────────────
+   Single class applied to every section / container wrapper.
+   Standardises left/right padding across all breakpoints (RESPONSIVE-SYSTEM §2).
+   Resolves Issue G-05: hero containers and content sections had mismatched gutters.
+*/
+@layer utilities {
+  .section-gutter {
+    @apply px-4 sm:px-6 md:px-10 lg:px-14 xl:px-20;
+  }
+}
+
+/* ── Lining numerals for serif text ────────────────────────────────────────────
+   Section numbers "01"–"06" must render as tabular lining-nums in all fallback
+   font scenarios, not just when the Tailwind `lining-nums` class is applied.
+   Resolves Issue T-01.
+*/
+.font-serif {
+  font-variant-numeric: lining-nums;
+}
+
+/* ── Background watermark — ultrawide opacity dampening ────────────────────────
+   At 1920px+ the watermark becomes visually dominant at opacity 0.04.
+   Reduce to 0.025 above that threshold.
+   Resolves Issues L-05, M-03.
+*/
+@media (min-width: 1920px) {
+  .bg-watermark {
+    opacity: 0.025 !important;
+  }
+}
+
+/* ── Archive modal: hide Dock + Navbar while modal is open ────────────────────
+   The Dock and Navbar live in the root App layout (outside the modal portal).
+   When the archive modal is open we tag <html data-archive-open> so we can
+   suppress them without prop-drilling or React context.
+   The modal itself is fixed z-[200]; the portal close button is z-[9999].
+*/
+[data-archive-open] .dock-root,
+[data-archive-open] nav {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

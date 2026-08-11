@@ -25,7 +25,7 @@ export default function BackgroundText() {
       <motion.div
         className="absolute left-[25%] top-[4%] font-serif font-bold leading-[0.86] text-ink"
         style={{
-          fontSize: 'clamp(80px, 18vw, 270px)',
+          fontSize: 'clamp(48px, 14vw, 270px)',
           opacity: 0.05,
           letterSpacing: '-4px',
           x,

@@ -50,7 +50,7 @@ export default function HeroImage({ images, index, direction }) {
     <div
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative h-[300px] w-full sm:h-[380px] md:absolute md:bottom-0 md:right-[-2%] md:z-10 md:h-[82%] md:w-[62%] md:translate-x-[20px] lg:right-[0%] lg:h-[100%] lg:w-[70%] lg:translate-x-[30px] lg:-translate-y-[10px]"
+      className="relative h-[420px] w-full sm:h-[480px] md:absolute md:bottom-0 md:right-[-2%] md:z-10 md:h-[82%] md:w-[62%] md:translate-x-[20px] lg:right-[0%] lg:h-[100%] lg:w-[70%] lg:translate-x-[30px] lg:-translate-y-[10px]"
     >
       <motion.div
         className="relative h-full w-full"

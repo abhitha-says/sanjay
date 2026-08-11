@@ -63,60 +63,81 @@ function MediaImage() {
   }
 
   return (
-    <div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => { mx.set(0); my.set(0) }}
-      className="absolute inset-0 z-0 hidden md:block"
-    >
-      <motion.div
-        className="absolute inset-0"
-        initial={{ opacity: 0, scale: 1.06, x: 30 }}
-        animate={{ opacity: 1, scale: 1, x: 0 }}
-        transition={{ duration: 1.4, delay: 0.24, ease }}
-      >
-        <motion.img
+    <>
+      {/* ── Mobile backdrop (< md) — same cinematic treatment as Journey ──────
+          Image fills the full section; face/subject sits in upper 60% so the
+          eye reads: person → back-link → typography → subtitle, travelling down.
+          Two-stop gradient keeps the subject as a presiding presence while the
+          text block below stays clean.
+      */}
+      <div className="absolute inset-0 z-0 md:hidden" aria-hidden="true">
+        <img
           src={heroImage}
-          alt="Dr. Sanjay Goel speaking at a conference"
-          fetchpriority="high"
-          style={{
-            x,
-            y,
-            WebkitMaskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 16%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.80) 40%, black 54%)',
-            maskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 16%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.80) 40%, black 54%)',
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat',
-            WebkitMaskSize: '100% 100%',
-            maskSize: '100% 100%',
-            objectPosition: '55% 20%',
-          }}
-          className="absolute inset-0 h-full w-full object-cover"
+          alt=""
+          className="h-full w-full object-cover opacity-[0.32]"
+          style={{ objectPosition: '80% 15%' }}
         />
-      </motion.div>
+        {/* from-transparent: warm golden image colour dominates at the top,
+            seamlessly matching the page background behind the navbar. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bg/30 to-bg/90" />
+      </div>
 
-      {/* Signature bottom-right over the image */}
-      <motion.div
-        initial={{ opacity: 0, x: 16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1.4, delay: 1.6, ease }}
-        aria-hidden="true"
-        className="absolute bottom-10 right-10 z-20 lg:bottom-14 lg:right-16"
+      {/* ── Desktop / Tablet image panel (≥ md) — unchanged ─────────────────── */}
+      <div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => { mx.set(0); my.set(0) }}
+        className="absolute inset-0 z-0 hidden md:block"
       >
-        <span
-          style={{
-            fontFamily: '"Cormorant Garamond", serif',
-            fontSize: 'clamp(22px, 2.6vw, 38px)',
-            fontStyle: 'italic',
-            fontWeight: 600,
-            color: 'rgba(17,17,17,0.55)',
-            letterSpacing: '0.5px',
-          }}
+        <motion.div
+          className="absolute inset-0"
+          initial={{ opacity: 0, scale: 1.06, x: 30 }}
+          animate={{ opacity: 1, scale: 1, x: 0 }}
+          transition={{ duration: 1.4, delay: 0.24, ease }}
         >
-          Sanjay Goel
-        </span>
-      </motion.div>
-    </div>
+          <motion.img
+            src={heroImage}
+            alt="Dr. Sanjay Goel speaking at a conference"
+            fetchpriority="high"
+            style={{
+              x,
+              y,
+              WebkitMaskImage:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 16%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.80) 40%, black 54%)',
+              maskImage:
+                'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 16%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.80) 40%, black 54%)',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskSize: '100% 100%',
+              maskSize: '100% 100%',
+              objectPosition: '50% 15%',
+            }}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </motion.div>
+
+        {/* Signature bottom-right over the image */}
+        <motion.div
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.4, delay: 1.6, ease }}
+          aria-hidden="true"
+          className="absolute bottom-10 right-10 z-20 lg:bottom-14 lg:right-16"
+        >
+          <span
+            style={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 'clamp(22px, 2.6vw, 38px)',
+              fontStyle: 'italic',
+              fontWeight: 600,
+              color: 'rgba(17,17,17,0.55)',
+              letterSpacing: '0.5px',
+            }}
+          >
+            Sanjay Goel
+          </span>
+        </motion.div>
+      </div>
+    </>
   )
 }
 
@@ -136,22 +157,32 @@ function BackHomeBtn() {
 
 export default function MediaHero({ index, title, accent, subtitle }) {
   return (
-    <section className="relative h-screen w-full overflow-hidden">
+    /*
+      Mobile  (< md) — Portrait-led editorial matching Journey's composition.
+        Media.jsx uses -mt-[72px] so the section starts behind the navbar;
+        h-[100svh] therefore fills the full viewport correctly.
+        justify-end + pb-16 anchors the text at the bottom;
+        the subject's face/conference scene occupies the upper area.
+
+      Desktop (≥ md) — Cinematic: full h-screen, content vertically centred
+        on the left, image covers the right half with a mask fade.
+    */
+    <section className="relative h-[100svh] w-full overflow-hidden md:h-screen">
 
       <BgWatermark />
 
-      {/* Full-bleed image — starts at the very top, behind the navbar */}
+      {/* Full-bleed image — mobile backdrop + desktop panel */}
       <MediaImage />
 
-      {/* Text content — left half, vertically centred */}
-      <div className="relative z-20 flex h-full flex-col justify-center px-6 pt-[72px] pl-6 md:pl-20 lg:max-w-[540px] lg:pl-24">
+      {/* Text content */}
+      <div className="relative z-20 flex h-full flex-col justify-end px-5 pb-16 pt-20 md:justify-center md:pb-0 md:pt-0 md:pl-20 lg:max-w-[540px] lg:pl-24">
 
         {/* Back link */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.1, ease }}
-          className="mb-6"
+          className="mb-5 md:mb-6"
         >
           <BackHomeBtn />
         </motion.div>
@@ -161,7 +192,7 @@ export default function MediaHero({ index, title, accent, subtitle }) {
           initial={{ opacity: 0, y: 30, scale: 1.03 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1.4, delay: 0.72, ease }}
-          className="font-sans text-[20px] font-semibold text-ink"
+          className="font-sans text-[20px] font-semibold tabular-nums lining-nums tracking-[-0.023em] text-ink"
         >
           {index}
         </motion.div>
@@ -193,7 +224,7 @@ export default function MediaHero({ index, title, accent, subtitle }) {
             initial={{ opacity: 0, y: 30, scale: 1.03 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1.4, delay: 1.1, ease }}
-            className="mt-4 max-w-[440px] font-sans text-[17px] leading-[28px] text-secondary"
+            className="mt-4 max-w-[420px] font-sans text-[14.5px] leading-[23px] text-secondary sm:text-[15px] sm:leading-[25px] md:max-w-[440px] md:text-[17px] md:leading-[28px]"
           >
             {subtitle}
           </motion.p>
