@@ -56,57 +56,79 @@ export default function Dock() {
     }
   }, [])
 
+  // Cinematic focus: when the current page changes, smoothly bring that
+  // chapter's chip to the center of the scroll strip rather than leaving it
+  // wherever it happens to sit. On desktop all four chips already fit without
+  // scrolling, so this is a no-op there.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const activeEl = el.querySelector('[data-active="true"]')
+    if (!activeEl) return
+    activeEl.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', inline: 'center', block: 'nearest' })
+  }, [pathname, reducedMotion])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 60 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1.1, delay: 1.68, ease }}
-      className="dock-root relative z-30 mx-4 mb-4 flex h-[140px] items-stretch overflow-hidden rounded-dock bg-glass shadow-soft backdrop-blur-[20px] md:mx-8 md:mb-8 lg:mx-14"
+      className="dock-root relative z-30 mx-4 mb-[calc(14px+env(safe-area-inset-bottom))] flex h-[clamp(72px,19vw,88px)] items-stretch overflow-hidden rounded-[34px] bg-glass shadow-soft backdrop-blur-[20px] sm:mx-8 sm:mb-8 sm:h-[140px] sm:rounded-dock lg:mx-14"
       style={{ pointerEvents: isTransitioning ? 'none' : undefined }}
     >
       {/* Discover more button */}
       <motion.button
         onClick={() => go('/discover-more')}
         whileHover={{ y: -3, scale: 1.02 }}
+        whileTap={{ scale: 0.96 }}
         transition={{ duration: 0.25, ease }}
-        className="flex w-[124px] shrink-0 cursor-pointer items-center justify-between gap-1 bg-ink px-4 font-sans text-white sm:w-[250px] sm:gap-0 sm:px-8"
+        className="flex w-[30%] shrink-0 cursor-pointer flex-row items-center justify-start gap-2 bg-ink pl-[3%] pr-[3%] text-white sm:w-[250px] sm:justify-between sm:gap-0 sm:pl-8 sm:pr-8"
         aria-label="Discover more"
       >
-        <span className="text-[13px] font-medium leading-tight sm:text-[18px]">Discover more</span>
-        <span className="relative top-0 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/25 text-[13px] sm:top-[6px] sm:ml-4 sm:h-9 sm:w-9 sm:text-[17px]">
+        <span className="relative top-0 order-1 flex h-[clamp(24px,6.2vw,28px)] w-[clamp(24px,6.2vw,28px)] shrink-0 items-center justify-center rounded-full bg-white text-[clamp(11px,3vw,13px)] text-ink shadow-[0_4px_14px_rgba(0,0,0,0.3)] transition-transform sm:order-2 sm:top-[6px] sm:ml-4 sm:h-9 sm:w-9 sm:bg-transparent sm:border sm:border-white/25 sm:text-[17px] sm:text-white sm:shadow-none">
           &#8599;
+        </span>
+        <span className="order-2 font-sans text-[clamp(12px,3.4vw,15px)] font-semibold leading-[1.15] sm:order-1 sm:text-[18px] sm:font-medium sm:leading-normal">
+          <span className="block sm:inline">Discover</span><span className="block sm:inline"> more</span>
         </span>
       </motion.button>
 
       <div
         ref={scrollRef}
-        className="scrollbar-hide flex min-w-0 flex-1 items-center justify-between gap-[10px] overflow-x-auto px-4 py-[6px] sm:gap-[14px] sm:px-6 lg:px-10"
+        className="scrollbar-hide flex min-w-0 flex-1 snap-x snap-mandatory items-center gap-[4%] overflow-x-auto px-[4%] py-[6px] sm:snap-none sm:justify-between sm:gap-[14px] sm:px-6 lg:px-10"
       >
         {items.map((item) => {
           const active = pathname === item.to
           return (
             <motion.div
               key={item.label}
+              data-active={active}
               whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.97 }}
               transition={{ duration: 0.25, ease }}
               onClick={() => go(item.to)}
-              className="flex shrink-0 cursor-pointer items-center gap-[6px] whitespace-nowrap"
+              className={`flex shrink-0 snap-start cursor-pointer items-center gap-[8px] whitespace-nowrap rounded-full py-1.5 pl-1.5 pr-4 transition-colors duration-300 sm:gap-[6px] sm:rounded-none sm:p-0 ${
+                active ? 'bg-brand/10 sm:bg-transparent' : ''
+              }`}
               role="button"
               aria-label={`Go to ${item.label}`}
+              aria-current={active ? 'page' : undefined}
             >
               <img
                 src={item.img}
                 alt=""
-                className="h-[48px] w-[48px] shrink-0 rounded-full object-cover"
+                className={`h-[clamp(38px,10vw,48px)] w-[clamp(38px,10vw,48px)] shrink-0 rounded-full object-cover transition-shadow duration-300 sm:h-[48px] sm:w-[48px] ${
+                  active ? 'ring-2 ring-brand sm:ring-0' : ''
+                }`}
               />
               <div>
                 <div
-                  className={`font-sans text-[16px] font-medium ${active ? 'text-brand' : 'text-ink'}`}
+                  className={`font-sans text-[clamp(13px,3.6vw,16px)] font-medium sm:text-[16px] ${active ? 'text-brand' : 'text-ink'}`}
                 >
                   {item.label}
                 </div>
                 <span
-                  className="flex items-center gap-1 font-sans text-[14px] text-secondary transition-colors hover:text-ink"
+                  className="flex items-center gap-1 font-sans text-[clamp(11px,3vw,14px)] text-secondary transition-colors hover:text-ink sm:text-[14px]"
                 >
                   View <span aria-hidden="true">&#8599;</span>
                 </span>
@@ -133,4 +155,3 @@ export default function Dock() {
     </motion.div>
   )
 }
-

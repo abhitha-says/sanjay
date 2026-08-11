@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <section className="relative z-20 h-screen w-full">
+      <section className="relative z-20 mb-8 h-screen w-full sm:mb-0">
         <BooksShowcase
           books={chapters}
           heroTitle="Chapters"
