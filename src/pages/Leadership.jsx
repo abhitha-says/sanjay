@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence, MotionConfig } from 'framer-motion'
 import leadershipHero from '../assets/leadership-hero.png'
 import cscmpNewsletter from '../assets/gallery/cscmp-newsletter-launch-2011.jpg'
 import felicitatedMinisterKhot from '../assets/gallery/felicitated-minister-khot.jpg'
@@ -14,6 +14,22 @@ import withSunilPal from '../assets/gallery/with-sunil-pal.jpg'
 import withAshaBhosle from '../assets/gallery/with-asha-bhosle.jpg'
 
 const ease = [0.22, 1, 0.36, 1]
+
+// Touch devices never fire hover, so anything revealed on hover alone is
+// unreachable there. Used to keep hover-revealed copy permanently visible.
+function useCoarsePointer() {
+  const [coarse, setCoarse] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: none)')
+    const sync = () => setCoarse(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  return coarse
+}
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -163,14 +179,16 @@ function BgWatermark() {
         style={{
           x,
           position: 'absolute',
-          left: '22%',
-          top: '4%',
+          left: '3%',
+          top: '9%',
           fontFamily: '"Cormorant Garamond", serif',
-          fontWeight: 900,
+          // Cormorant Garamond ships 300–700 only; asking for 900 makes the
+          // browser synthesize a smeared fake bold.
+          fontWeight: 700,
           lineHeight: 0.86,
           letterSpacing: '-4px',
-          opacity: 0.05,
-          fontSize: 'clamp(70px, 16vw, 250px)',
+          opacity: 0.04,
+          fontSize: 'clamp(80px, 17vw, 280px)',
           color: '#111111',
         }}
       >
@@ -275,7 +293,7 @@ function LeadershipHero() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease }}
-            className="mb-6 mt-20 md:mt-24"
+            className="mb-8 mt-28 md:mt-32"
           >
             <BackHomeBtn />
           </motion.div>
@@ -285,7 +303,7 @@ function LeadershipHero() {
             initial={{ opacity: 0, y: 30, scale: 1.03 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1.4, delay: 0.72, ease }}
-            className="font-sans text-[20px] font-semibold text-ink"
+            className="font-sans text-[20px] font-semibold tabular-nums lining-nums tracking-[-0.023em] text-ink"
           >
             04
           </motion.div>
@@ -295,12 +313,10 @@ function LeadershipHero() {
             initial={{ opacity: 0, y: 30, scale: 1.03 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1.4, delay: 0.84, ease }}
-            className="mt-2 font-serif font-black leading-[0.92] text-ink"
-            style={{ letterSpacing: '-2px', fontWeight: 900, fontSize: 'clamp(52px, 6.5vw, 110px)' }}
+            className="mt-2 whitespace-nowrap font-serif leading-[1.02] text-ink"
+            style={{ letterSpacing: '-2px', fontWeight: 700, fontSize: 'clamp(44px, 6vw, 96px)' }}
           >
-            Leader
-            <br />
-            <span style={{ color: '#2d7a3a' }}>ship</span>
+            Leader<span style={{ color: '#2d7a3a' }}>ship</span>
           </motion.h1>
 
           {/* Red accent line */}
@@ -316,7 +332,7 @@ function LeadershipHero() {
             initial={{ opacity: 0, y: 30, scale: 1.03 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 1.4, delay: 1.1, ease }}
-            className="mt-4 max-w-[440px] font-sans text-[17px] leading-[28px] text-secondary"
+            className="mt-4 max-w-[440px] font-sans text-[17px] leading-[28px] tracking-[-0.026em] text-secondary"
           >
             Governance and stewardship across a diversified group, industry chambers, and the boards of a dozen companies.
           </motion.p>
@@ -335,9 +351,15 @@ function LeadershipHero() {
             ].map(({ num, label }) => (
               <div
                 key={label}
-                className="rounded-[14px] border border-border bg-white/60 backdrop-blur-sm px-4 py-2.5 text-center"
+                className="rounded-[14px] [corner-shape:squircle] border border-border bg-white/60 backdrop-blur-sm px-4 py-2.5 text-center [@media(prefers-reduced-transparency:reduce)]:bg-white"
               >
-                <div className="font-serif font-black text-[24px] leading-none text-ink" style={{ letterSpacing: '-1px' }}>
+                {/* Cormorant runs light and small on the body; the stat needs
+                    a size bump at a real 700 to carry the same weight the
+                    synthetic 900 was faking. */}
+                <div
+                  className="font-serif text-[30px] leading-none tabular-nums lining-nums text-ink"
+                  style={{ fontWeight: 700, letterSpacing: '-0.5px' }}
+                >
                   {num}
                 </div>
                 <div className="mt-0.5 font-sans text-[10px] font-semibold uppercase tracking-[0.1em] text-secondary">
@@ -345,6 +367,20 @@ function LeadershipHero() {
                 </div>
               </div>
             ))}
+          </motion.div>
+
+          {/* Scroll cue — fills the lower-left composition and signals depth */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 1.9, ease }}
+            className="mt-10 hidden items-center gap-3 md:flex md:mt-16"
+            aria-hidden="true"
+          >
+            <span className="h-[26px] w-px bg-border" />
+            <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary/70">
+              Scroll for the full record
+            </span>
           </motion.div>
         </div>
       </div>
@@ -356,6 +392,8 @@ function LeadershipHero() {
 
 function EnterpriseCard({ role, index }) {
   const [hovered, setHovered] = useState(false)
+  const coarse = useCoarsePointer()
+  const showDescription = hovered || coarse
 
   return (
     <motion.div
@@ -367,7 +405,7 @@ function EnterpriseCard({ role, index }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="relative overflow-hidden rounded-[24px] aspect-[4/3]">
+      <div className="relative overflow-hidden rounded-[24px] [corner-shape:squircle] aspect-[4/3]">
         <motion.img
           src={role.image}
           alt={role.imageCaption}
@@ -379,7 +417,7 @@ function EnterpriseCard({ role, index }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
         <div className="absolute top-5 right-5">
-          <span className="rounded-[999px] bg-black/40 px-3 py-1.5 font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-white/90 backdrop-blur-md">
+          <span className="rounded-[999px] bg-black/40 px-3 py-1.5 font-sans text-[11px] font-semibold uppercase tabular-nums lining-nums tracking-[0.1em] text-white/90 backdrop-blur-md">
             {role.period}
           </span>
         </div>
@@ -397,9 +435,9 @@ function EnterpriseCard({ role, index }) {
             {role.title}
           </h3>
           <motion.p
-            animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 10 }}
+            animate={{ opacity: showDescription ? 1 : 0, y: showDescription ? 0 : 10 }}
             transition={{ duration: 0.35 }}
-            className="mt-2 font-sans text-[13.5px] leading-[21px] text-white/75"
+            className="mt-2 font-sans text-[13.5px] leading-[21px] tracking-[-0.006em] text-white/75"
           >
             {role.description}
           </motion.p>
@@ -427,12 +465,23 @@ function ChamberRow({ role, index }) {
       transition={{ duration: 0.7, delay: Math.min(index * 0.06, 0.35), ease }}
       className={`group border-b border-border ${hasImage ? 'cursor-pointer' : ''}`}
       onClick={() => hasImage && setExpanded(!expanded)}
+      {...(hasImage && {
+        role: 'button',
+        tabIndex: 0,
+        'aria-expanded': expanded,
+        onKeyDown: (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setExpanded((v) => !v)
+          }
+        },
+      })}
     >
       {/* Clean 4-col grid: index | category | title+org | period + toggle */}
       <div className="grid grid-cols-[28px_80px_1fr_auto] items-start gap-x-5 py-5 md:grid-cols-[32px_90px_1fr_140px]">
 
         {/* Col 1: row index */}
-        <div className="pt-[3px] font-sans text-[12px] font-semibold text-secondary/40 tabular-nums">
+        <div className="pt-[3px] font-sans text-[12px] font-semibold text-secondary/40 tabular-nums lining-nums">
           {String(index + 1).padStart(2, '0')}
         </div>
 
@@ -448,12 +497,12 @@ function ChamberRow({ role, index }) {
           <h3 className="font-serif text-[18px] font-bold leading-snug text-ink group-hover:text-brand transition-colors duration-200">
             {role.title}
           </h3>
-          <div className="mt-0.5 font-sans text-[13px] text-secondary leading-snug">{role.org}</div>
+          <div className="mt-0.5 font-sans text-[13px] tracking-[-0.006em] text-secondary leading-snug">{role.org}</div>
         </div>
 
         {/* Col 4: period + toggle */}
         <div className="flex items-center justify-end gap-3 pt-[3px] shrink-0">
-          <span className="font-sans text-[11px] font-bold uppercase tracking-[0.1em] text-brand whitespace-nowrap">
+          <span className="font-sans text-[11px] font-bold uppercase tabular-nums lining-nums tracking-[0.1em] text-brand whitespace-nowrap">
             {role.period}
           </span>
           {hasImage && (
@@ -478,8 +527,8 @@ function ChamberRow({ role, index }) {
             transition={{ duration: 0.5, ease }}
             className="overflow-hidden"
           >
-            <div className="pl-[117px] pb-6 flex gap-5 items-start">
-              <div className="relative overflow-hidden rounded-[18px] w-full max-w-[400px] aspect-[4/3] shrink-0 shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+            <div className="pl-0 md:pl-[162px] pb-6 flex gap-5 items-start">
+              <div className="relative overflow-hidden rounded-[18px] [corner-shape:squircle] w-full max-w-[400px] aspect-[4/3] shrink-0 shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
                 <img
                   src={role.image}
                   alt={role.caption}
@@ -487,11 +536,11 @@ function ChamberRow({ role, index }) {
                   style={{ objectPosition: role.imagePosition ?? '50% 30%' }}
                 />
               </div>
-              <p className="hidden md:block font-sans text-[13.5px] italic leading-[22px] text-secondary max-w-[240px] mt-3">
+              <p className="hidden md:block font-sans text-[13.5px] italic leading-[22px] tracking-[-0.006em] text-secondary max-w-[240px] mt-3">
                 {role.caption}
               </p>
             </div>
-            <p className="pb-4 font-sans text-[13px] italic text-secondary md:hidden">{role.caption}</p>
+            <p className="pb-4 font-sans text-[13px] italic tracking-[-0.006em] text-secondary md:hidden">{role.caption}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -515,7 +564,7 @@ function SpotlightPhotoCard({ src, caption, pos, index, aspectClass = 'aspect-[4
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className={`relative overflow-hidden rounded-[20px] shadow-[0_6px_32px_rgba(0,0,0,0.1)] transition-shadow duration-500 group-hover:shadow-[0_16px_56px_rgba(0,0,0,0.18)] ${aspectClass}`}
+        className={`relative overflow-hidden rounded-[20px] [corner-shape:squircle] shadow-[0_6px_32px_rgba(0,0,0,0.1)] transition-shadow duration-500 group-hover:shadow-[0_16px_56px_rgba(0,0,0,0.18)] ${aspectClass}`}
       >
         <motion.img
           src={src}
@@ -596,14 +645,14 @@ function BoardCell({ board, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.7, delay: Math.min(index * 0.05, 0.4), ease }}
-      className="group relative rounded-[18px] border border-border bg-white/50 p-5 transition-all duration-300 hover:border-brand/20 hover:bg-white/80 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+      className="group relative rounded-[18px] [corner-shape:squircle] border border-border bg-white/50 p-5 transition-all duration-300 hover:border-brand/20 hover:bg-white/80 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
     >
       <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-[18px] bg-brand origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-300" />
-      <div className="font-sans text-[11px] font-bold uppercase tracking-[0.12em] text-brand mb-2">
+      <div className="font-sans text-[11px] font-bold uppercase tabular-nums lining-nums tracking-[0.12em] text-brand mb-2">
         {board.period}
       </div>
-      <h3 className="font-serif text-[17px] font-bold leading-snug text-ink">{board.title}</h3>
-      <div className="mt-1 font-sans text-[13.5px] text-secondary leading-snug">{board.org}</div>
+      <h3 className="font-serif text-[17px] font-bold leading-snug tracking-[-0.026em] text-ink">{board.title}</h3>
+      <div className="mt-1 font-sans text-[13.5px] tracking-[-0.006em] text-secondary leading-snug">{board.org}</div>
     </motion.div>
   )
 }
@@ -618,7 +667,7 @@ function MembershipTag({ name, index }) {
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.07, ease }}
       whileHover={{ scale: 1.04, y: -2 }}
-      className="inline-block cursor-default rounded-[12px] border border-border bg-white/60 px-4 py-2.5 font-sans text-[13.5px] font-medium text-ink shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
+      className="inline-block cursor-default rounded-[12px] [corner-shape:squircle] border border-border bg-white/60 px-4 py-2.5 font-sans text-[13.5px] tracking-[-0.006em] font-medium text-ink shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
     >
       {name}
     </motion.span>
@@ -641,7 +690,7 @@ function AwardBanner() {
         className="absolute -inset-[1px] rounded-[29px] opacity-60"
         style={{ background: 'linear-gradient(135deg, #2d7a3a 0%, #1a5c7a 50%, #2d7a3a 100%)' }}
       />
-      <div className="relative rounded-[28px] bg-ink overflow-hidden px-8 py-10 md:px-14 md:py-14">
+      <div className="relative rounded-[28px] [corner-shape:squircle] bg-ink overflow-hidden px-8 py-10 md:px-14 md:py-14">
         <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand/20 blur-[90px]" />
         <div aria-hidden="true" className="pointer-events-none absolute -left-20 -bottom-20 h-56 w-56 rounded-full opacity-20 blur-[80px]" style={{ background: '#1a5c7a' }} />
 
@@ -653,16 +702,16 @@ function AwardBanner() {
             </svg>
           </div>
           <div className="flex-1">
-            <span className="font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-brand/90">Recognition · May 2015</span>
+            <span className="font-sans text-[11px] font-bold uppercase lining-nums tracking-[0.18em] text-brand/90">Recognition · May 2015</span>
             <h3 className="mt-2 font-serif font-bold text-white leading-tight" style={{ fontSize: 'clamp(26px, 3.5vw, 44px)' }}>
               Super Achiever Award
             </h3>
-            <p className="mt-4 max-w-[520px] font-sans text-[15px] leading-[27px] text-white/60">
+            <p className="mt-4 max-w-[520px] font-sans text-[15px] leading-[27px] tracking-[-0.016em] text-white/60">
               Issued by the Oriental College of Management in recognition of achievements and progressive work with GTC Group — acknowledging four decades of leadership, vision, and consistent contribution to business and society.
             </p>
           </div>
           <div className="shrink-0 lg:w-[180px] lg:border-l lg:border-white/10 lg:pl-10">
-            <p className="font-serif text-[17px] italic leading-[28px] text-white/35">
+            <p className="font-serif text-[17px] italic leading-[28px] tracking-[-0.026em] text-white/35">
               "Acknowledging leadership, vision and consistent contribution."
             </p>
             <span className="mt-4 block h-[2px] w-10 bg-brand/60" />
@@ -684,12 +733,12 @@ function SectionLabel({ eyebrow, title, description }) {
       transition={{ duration: 0.9, ease }}
       className="mb-12"
     >
-      <span className="font-sans text-[12px] font-bold uppercase tracking-[0.16em] text-brand">{eyebrow}</span>
+      <span className="font-sans text-[12px] font-bold uppercase lining-nums tracking-[0.16em] text-brand">{eyebrow}</span>
       <h2 className="mt-2 font-serif font-bold leading-tight text-ink" style={{ fontSize: 'clamp(28px, 3.8vw, 48px)', letterSpacing: '-0.5px' }}>
         {title}
       </h2>
       {description && (
-        <p className="mt-3 max-w-[480px] font-sans text-[15px] leading-[26px] text-secondary">{description}</p>
+        <p className="mt-3 max-w-[480px] font-sans text-[15px] leading-[26px] tracking-[-0.016em] text-secondary">{description}</p>
       )}
     </motion.div>
   )
@@ -701,7 +750,7 @@ function BackHomeBtn() {
   return (
     <button
       onClick={() => go('/')}
-      className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[13px] text-secondary transition-colors hover:text-ink"
+      className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 font-sans text-[13px] tracking-[-0.006em] text-secondary transition-colors hover:text-ink"
       aria-label="Back home"
     >
       <span aria-hidden="true">←</span> Back home
@@ -713,6 +762,7 @@ function BackHomeBtn() {
 
 export default function Leadership() {
   return (
+    <MotionConfig reducedMotion="user">
     <main className="relative z-20">
       {/* HERO — exactly like Media page */}
       <LeadershipHero />
@@ -790,5 +840,6 @@ export default function Leadership() {
         <AwardBanner />
       </section>
     </main>
+    </MotionConfig>
   )
 }

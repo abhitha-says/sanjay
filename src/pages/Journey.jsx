@@ -212,10 +212,12 @@ function BgWatermark() {
         style={{
           x,
           position: 'absolute',
-          left: '22%',
-          top: '4%',
+          left: '3%',
+          top: '9%',
           fontFamily: '"Cormorant Garamond", serif',
-          fontWeight: 900,
+          // Cormorant Garamond ships 300–700; 900 gets synthesized into a
+          // smeared fake bold.
+          fontWeight: 700,
           lineHeight: 0.86,
           letterSpacing: '-4px',
           opacity: 0.05,
@@ -247,7 +249,10 @@ function JourneyImage() {
     <div
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { mx.set(0); my.set(0) }}
-      className="absolute inset-0 z-0 hidden md:block"
+      // portrait-2.png is a 500x500 square. Stretched across the full viewport
+      // with object-cover it upscaled ~4x and cropped the head off top and
+      // bottom, so it is boxed into a near-square panel on the right instead.
+      className="absolute bottom-0 right-0 z-0 hidden md:block md:h-[92%] md:w-[58%] lg:w-[52%] xl:w-[46%]"
     >
       <motion.div
         className="absolute inset-0"
@@ -262,15 +267,19 @@ function JourneyImage() {
           style={{
             x,
             y,
+            // Left fade dissolves the panel edge into the page; bottom fade
+            // stops the portrait hard-cutting at the section border.
             WebkitMaskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 16%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.80) 40%, black 54%)',
+              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.06) 8%, rgba(0,0,0,0.3) 18%, rgba(0,0,0,0.7) 27%, black 36%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 7%, black 18%)',
             maskImage:
-              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.02) 6%, rgba(0,0,0,0.12) 16%, rgba(0,0,0,0.45) 28%, rgba(0,0,0,0.80) 40%, black 54%)',
+              'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.06) 8%, rgba(0,0,0,0.3) 18%, rgba(0,0,0,0.7) 27%, black 36%), linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 7%, black 18%)',
+            WebkitMaskComposite: 'source-in',
+            maskComposite: 'intersect',
             WebkitMaskRepeat: 'no-repeat',
             maskRepeat: 'no-repeat',
             WebkitMaskSize: '100% 100%',
             maskSize: '100% 100%',
-            objectPosition: '50% 15%',
+            objectPosition: '50% 18%',
           }}
           className="absolute inset-0 h-full w-full object-cover"
         />
@@ -294,11 +303,13 @@ function BackHomeBtn() {
 
 function JourneyHero() {
   return (
-    <section className="relative min-h-screen w-full md:h-screen md:overflow-hidden">
+    // The 72px in-flow <header> sits above <main>, so a full 100vh hero always
+    // pushed its own bottom below the fold. Subtract the header height.
+    <section className="relative min-h-[calc(100svh-72px)] w-full md:h-[calc(100svh-72px)] md:overflow-hidden">
       <BgWatermark />
       <JourneyImage />
 
-      <div className="relative z-20 flex h-full flex-col justify-center px-6 pt-[72px] pb-10 md:pb-0 md:pl-20 lg:max-w-[560px] lg:pl-24">
+      <div className="relative z-20 flex h-full flex-col justify-center px-6 pt-10 pb-10 md:pb-0 md:pt-0 md:pl-20 lg:max-w-[560px] lg:pl-24">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -312,7 +323,7 @@ function JourneyHero() {
           initial={{ opacity: 0, y: 30, scale: 1.03 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1.4, delay: 0.72, ease }}
-          className="font-sans text-[20px] font-semibold text-ink"
+          className="font-sans text-[20px] font-semibold tabular-nums lining-nums tracking-[-0.023em] text-ink"
         >
           03
         </motion.div>
@@ -321,8 +332,8 @@ function JourneyHero() {
           initial={{ opacity: 0, y: 30, scale: 1.03 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1.4, delay: 0.84, ease }}
-          className="mt-2 font-serif font-black leading-[0.92] text-ink"
-          style={{ letterSpacing: '-2px', fontWeight: 900, fontSize: 'clamp(52px, 6.5vw, 110px)' }}
+          className="mt-2 font-serif leading-[0.92] text-ink"
+          style={{ letterSpacing: '-2px', fontWeight: 700, fontSize: 'clamp(52px, 6.5vw, 110px)' }}
         >
           The <span style={{ color: '#2d7a3a' }}>Journey</span>
         </motion.h1>
@@ -356,8 +367,13 @@ function JourneyHero() {
             { num: String(roleCount), label: 'Roles Held' },
             { num: '1985', label: 'Since' },
           ].map(({ num, label }) => (
-            <div key={label} className="rounded-[14px] border border-border bg-white/60 px-4 py-2.5 text-center backdrop-blur-sm">
-              <div className="font-serif text-[24px] font-black leading-none text-ink" style={{ letterSpacing: '-1px' }}>
+            <div key={label} className="rounded-[14px] [corner-shape:squircle] border border-border bg-white/60 px-4 py-2.5 text-center backdrop-blur-sm [@media(prefers-reduced-transparency:reduce)]:bg-white">
+              {/* lining-nums matters most here: Cormorant defaults to old-style
+                  figures, which made "1985" ride up and down the baseline. */}
+              <div
+                className="font-serif text-[30px] leading-none tabular-nums lining-nums text-ink"
+                style={{ fontWeight: 700, letterSpacing: '-0.5px' }}
+              >
                 {num}
               </div>
               <div className="mt-0.5 font-sans text-[10px] font-semibold uppercase tracking-[0.1em] text-secondary">

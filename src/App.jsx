@@ -17,7 +17,7 @@ export default function App() {
   return (
     <TransitionProvider>
       <div
-        className="relative mx-auto flex min-h-screen max-w-container flex-col overflow-x-hidden"
+        className="relative flex min-h-screen w-full flex-col overflow-x-hidden"
         style={{
           background:
             'radial-gradient(circle at 74% 60%, rgba(255,247,235,0.08), transparent 32%), radial-gradient(circle at 15% 10%, rgba(255,255,255,0.15), transparent 45%), radial-gradient(circle at 85% 90%, rgba(0,0,0,0.009), transparent 50%), #F5F2ED',

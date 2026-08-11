@@ -63,7 +63,10 @@ export default function Dock() {
               key={item.label}
               whileHover={{ y: -4 }}
               transition={{ duration: 0.25, ease }}
-              className="flex shrink-0 items-center gap-[6px] whitespace-nowrap"
+              onClick={() => go(item.to)}
+              className="flex shrink-0 cursor-pointer items-center gap-[6px] whitespace-nowrap"
+              role="button"
+              aria-label={`Go to ${item.label}`}
             >
               <img
                 src={item.img}
@@ -76,13 +79,11 @@ export default function Dock() {
                 >
                   {item.label}
                 </div>
-                <button
-                  onClick={() => go(item.to)}
-                  className="flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-sans text-[14px] text-secondary transition-colors hover:text-ink"
-                  aria-label={`Go to ${item.label}`}
+                <span
+                  className="flex items-center gap-1 font-sans text-[14px] text-secondary transition-colors hover:text-ink"
                 >
                   View <span aria-hidden="true">&#8599;</span>
-                </button>
+                </span>
               </div>
             </motion.div>
           )
