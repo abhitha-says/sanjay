@@ -300,18 +300,18 @@ function ProfileCard({ profile }) {
       onTouchStart={handleTouch}
       whileHover={{ y: -3 }}
       transition={{ duration: 0.25, ease }}
-      className="group flex items-center gap-3.5 rounded-[18px] border border-border bg-white/70 px-4 py-4 transition-colors hover:border-brand/30 hover:bg-white"
+      className="group block rounded-[18px] border border-border bg-white/70 px-4 py-4 transition-colors hover:border-brand/30 hover:bg-white"
       aria-label={`${profile.label ?? profile.title} — ${profile.handle}`}
     >
+      {/* `block` spans the tooltip wrapper across the whole card, so the bubble
+          and its pointer centre on the card rather than on the icon. */}
       <AnimatedTooltip
         open={open}
+        block
         variant={TOOLTIP_VARIANT[profile.title] ?? 'cora'}
         shapeColor="#111111"
         textColor="#F5F2ED"
-        // leading-[0] kills the inline-block descender gap the wrapper would
-        // otherwise add to the card's height.
-        className="shrink-0 leading-[0]"
-        triggerClassName="flex"
+        triggerClassName="flex items-center gap-3.5"
         content={
           <span className="font-sans">
             <span className="font-semibold">{profile.label ?? profile.title}</span>
@@ -332,23 +332,23 @@ function ProfileCard({ profile }) {
             <path d={profile.d} />
           </svg>
         </span>
+
+        <span className="min-w-0">
+          <span className="block font-sans text-[14.5px] font-semibold leading-tight text-ink">
+            {profile.label ?? profile.title}
+          </span>
+          <span className="mt-0.5 block truncate font-sans text-[13px] text-secondary">
+            {profile.handle}
+          </span>
+        </span>
+
+        <span
+          aria-hidden="true"
+          className="ml-auto font-sans text-[15px] text-secondary transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand"
+        >
+          &#8599;
+        </span>
       </AnimatedTooltip>
-
-      <span className="min-w-0">
-        <span className="block font-sans text-[14.5px] font-semibold leading-tight text-ink">
-          {profile.label ?? profile.title}
-        </span>
-        <span className="mt-0.5 block truncate font-sans text-[13px] text-secondary">
-          {profile.handle}
-        </span>
-      </span>
-
-      <span
-        aria-hidden="true"
-        className="ml-auto font-sans text-[15px] text-secondary transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand"
-      >
-        &#8599;
-      </span>
     </motion.a>
   )
 }

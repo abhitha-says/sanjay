@@ -232,6 +232,10 @@ export default function AnimatedTooltip({
   strokeColor = 'rgba(255,255,255,0.35)',
   // Widest the bubble may get on small screens, as a % of viewport width.
   maxVw = 72,
+  // Fill the parent instead of hugging the trigger content. Use this when the
+  // bubble should centre over a whole card rather than over the small element
+  // it visually decorates — `left: 50%` is relative to this wrapper.
+  block = false,
   className,
   triggerClassName,
 }) {
@@ -283,11 +287,14 @@ export default function AnimatedTooltip({
 
   return (
     <span
-      className={cn('relative inline-block', className)}
+      className={cn('relative', block ? 'block w-full' : 'inline-block', className)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <span ref={triggerRef} className={cn('inline-block', triggerClassName)}>
+      <span
+        ref={triggerRef}
+        className={cn(block ? 'block w-full' : 'inline-block', triggerClassName)}
+      >
         {children}
       </span>
 

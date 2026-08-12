@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
 import { useTransition } from '../context/TransitionContext'
+import { Mail } from './icons'
+import portrait2 from '../assets/portrait-2.png'
 
 const items = [
   {
@@ -16,14 +18,23 @@ const items = [
     img: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=100&h=100&fit=crop',
   },
   {
+    // Dr. Goel's own headshot rather than a stock portrait of a stranger —
+    // it's already square, so it crops cleanly into the circle.
     label: 'Leadership',
     to: '/leadership',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
+    img: portrait2,
   },
   {
     label: 'Media',
     to: '/media',
     img: 'https://images.unsplash.com/photo-1483058712412-4245e9b90334?w=100&h=100&fit=crop',
+  },
+  {
+    // An action, not a chapter — so it carries a glyph instead of a
+    // photograph, which is also the only honest thumbnail for "write to him".
+    label: 'Contact',
+    to: '/contact',
+    icon: Mail,
   },
 ]
 
@@ -140,13 +151,24 @@ export default function Dock() {
               aria-label={`Go to ${item.label}`}
               aria-current={active ? 'page' : undefined}
             >
-              <img
-                src={item.img}
-                alt=""
-                className={`h-[clamp(38px,10vw,48px)] w-[clamp(38px,10vw,48px)] shrink-0 rounded-full object-cover transition-shadow duration-300 sm:h-[48px] sm:w-[48px] ${
-                  active ? 'ring-2 ring-brand sm:ring-0' : ''
-                }`}
-              />
+              {item.icon ? (
+                <span
+                  aria-hidden="true"
+                  className={`flex h-[clamp(38px,10vw,48px)] w-[clamp(38px,10vw,48px)] shrink-0 items-center justify-center rounded-full transition-colors duration-300 sm:h-[48px] sm:w-[48px] ${
+                    active ? 'bg-brand text-white ring-2 ring-brand sm:ring-0' : 'bg-ink/[0.06] text-ink'
+                  }`}
+                >
+                  <item.icon className="h-[clamp(17px,4.4vw,20px)] w-[clamp(17px,4.4vw,20px)] sm:h-5 sm:w-5" />
+                </span>
+              ) : (
+                <img
+                  src={item.img}
+                  alt=""
+                  className={`h-[clamp(38px,10vw,48px)] w-[clamp(38px,10vw,48px)] shrink-0 rounded-full object-cover transition-shadow duration-300 sm:h-[48px] sm:w-[48px] ${
+                    active ? 'ring-2 ring-brand sm:ring-0' : ''
+                  }`}
+                />
+              )}
               <div>
                 <div
                   className={`font-sans text-[clamp(13px,3.6vw,16px)] font-medium sm:text-[16px] ${active ? 'text-brand' : 'text-ink'}`}
@@ -165,9 +187,12 @@ export default function Dock() {
       </div>
 
       {canScrollRight && (
+        // Not sm:hidden any more: with five chips the strip can overflow on
+        // mid-size screens too, and the hint only renders when there is
+        // actually somewhere to scroll to.
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 z-10 flex w-14 items-center justify-end bg-gradient-to-l from-glass from-40% to-transparent pr-2 sm:hidden"
+          className="pointer-events-none absolute inset-y-0 right-0 z-10 flex w-14 items-center justify-end bg-gradient-to-l from-glass from-40% to-transparent pr-2"
         >
           <motion.span
             animate={reducedMotion ? undefined : { x: [0, 5, 0] }}
