@@ -74,18 +74,22 @@ export const publicService = [
     status: 'needs-confirmation',
   },
   {
-    word: 'Public Service',
-    body: 'Resource Person, National Commission for Women, India (2025 — Present). Exact scope of the role is unconfirmed.',
-    status: 'needs-confirmation',
-  },
-  {
     word: 'Relief',
     body: 'Fund raiser, Prime Minister’s Relief Fund (1987) — disaster and humanitarian relief fundraising.',
     status: 'needs-confirmation',
   },
   {
     word: 'Community',
-    body: 'Vice Chairman, Navi Mumbai Chamber of Business & Industries; ex-President, Lions Club of Kharghar; President, Agrawal Samaj, Kharghar; Secretary (West Zone), St. Xavier’s College Calcutta Alumni Association.',
+    body: 'Posts held across community associations, trade chambers and professional councils.',
+    // Rendered as a numbered list, not a run-on paragraph — see ServiceCard
+    // and the detail panel in pages/Initiatives.jsx.
+    posts: [
+      'Past President — Agarwal Samaj, Kharghar, Navi Mumbai',
+      'Vice President, Maharashtra — Akhil Bhartiya Agrawal Sammelan',
+      'Ex Governing Council Member — Maharashtra Chamber of Commerce, Industry and Agriculture',
+      'Ex Vice President, India — Council of Supply Chain Management Professionals, USA',
+      'India Partner — Supply Chain Asia, Singapore',
+    ],
     status: 'public',
   },
 ]

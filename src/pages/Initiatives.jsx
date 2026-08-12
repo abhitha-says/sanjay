@@ -80,6 +80,18 @@ function ServiceCard({ item, index }) {
         <div>
           <h4 className="font-serif text-[18px] font-bold text-ink">{item.word}</h4>
           <p className="mt-1.5 font-sans text-[14px] leading-[24px] text-secondary">{item.body}</p>
+          {item.posts && (
+            <ol className="mt-3 space-y-1.5">
+              {item.posts.map((post, n) => (
+                <li key={post} className="flex gap-2.5 font-sans text-[14px] leading-[22px] text-secondary">
+                  <span className="shrink-0 font-semibold tabular-nums lining-nums text-brand/70">
+                    {n + 1}.
+                  </span>
+                  <span>{post}</span>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       </div>
     </Reveal>
@@ -360,6 +372,18 @@ export default function Initiatives() {
                 className="mb-12 max-w-[60ch] rounded-[16px] border border-brand/15 bg-brand/6 p-5 font-sans text-[15px] leading-[26px] text-secondary"
               >
                 {activeService.body}
+                {activeService.posts && (
+                  <ol className="mt-4 space-y-2">
+                    {activeService.posts.map((post, n) => (
+                      <li key={post} className="flex gap-3">
+                        <span className="shrink-0 font-semibold tabular-nums lining-nums text-brand">
+                          {String(n + 1).padStart(2, '0')}
+                        </span>
+                        <span>{post}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

@@ -10,19 +10,30 @@ For Dr. Goel to review before this content is treated as final. Status tags matc
   Directors: Sanjay Goel and Asha Goel, both since incorporation. Status: active.
   Source: Ministry of Corporate Affairs company registry (via public registry mirror).
 
+## SUPPLIED BY DR. GOEL (his own wording — treated as authoritative)
+These five posts are the numbered "Community" list on the Initiatives page and the
+Chambers & Bodies rows on the Leadership page:
+1. Past President — Agarwal Samaj, Kharghar, Navi Mumbai
+2. Vice President, Maharashtra — Akhil Bhartiya Agrawal Sammelan
+3. Ex Governing Council Member — Maharashtra Chamber of Commerce, Industry and Agriculture
+4. Ex Vice President, India — Council of Supply Chain Management Professionals, USA
+5. India Partner — Supply Chain Asia, Singapore
+
+Also supplied: Bargain India Pvt Ltd and Pet Travel Pvt Limited both closed in 2025.
+
 ## PUBLICLY STATED (self-sourced, from Dr. Goel's own site/profiles — not third-party verified)
 - Founder, Aryavarta Heritage Foundation, 2020–present; mission to preserve/promote
   Ancient Indian heritage.
 - Vice Chairman, Navi Mumbai Chamber of Business & Industries; ex-President, Lions
-  Club of Kharghar; President, Agrawal Samaj Kharghar; Secretary (West Zone),
-  St. Xavier's College Calcutta Alumni Association; India Representative, Supply
-  Chain Asia.
+  Club of Kharghar; Secretary (West Zone), St. Xavier's College Calcutta Alumni
+  Association.
 - 37+ years of professional experience.
 
 ## CLIENT CONFIRMATION REQUIRED
 - Any specific Aryavarta Heritage Foundation projects, sites, events, publications
   or partnerships — none found in public sources.
-- Exact scope/mandate of the "Resource Person, National Commission for Women" role.
+- Tenure years for the five posts above — shown as "Former"/"Present" rather than
+  invented date ranges.
 - The Greenzytech Solutions LLP water-treatment figures (25-year maintenance-free
   claim, up to 50% cost reduction) — no independent source found; currently shown
   as plain text with a "not independently verified" note attached in the data layer.

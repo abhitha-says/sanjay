@@ -11,6 +11,7 @@ export const PAGE_ORDER = [
   '/leadership',
   '/media',
   '/discover-more',
+  '/contact',
 ]
 
 const TransitionContext = createContext(null)

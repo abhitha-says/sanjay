@@ -138,7 +138,7 @@ function AwardCard() {
               Super Achiever Award
             </h3>
             <p className="mt-3 max-w-[520px] font-sans text-[15px] leading-[26px] text-white/65">
-              Issued by the Oriental College of Management in recognition of achievements and progressive work associated with GTC Group — acknowledging four decades of leadership, vision, and consistent contribution.
+              Issued by the Oriental College of Management for progressive work with GTC Group.
             </p>
           </div>
           <div className="shrink-0 border-t border-white/10 pt-4 font-sans text-[14px] italic leading-[22px] text-white/40 md:w-[160px] md:border-l md:border-t-0 md:pl-8 md:pt-0">
@@ -166,7 +166,7 @@ export default function Media() {
         index="05"
         title="Media &"
         accent="Recognition"
-        subtitle="An established speaker across India and abroad, carrying four decades of supply chain, real estate and heritage experience onto stages and into six languages."
+        subtitle="Four decades of supply chain, real estate and heritage work, delivered from a podium in any of six languages."
       />
 
       {/* ── Speaking Topics ── */}
@@ -180,7 +180,7 @@ export default function Media() {
           </Reveal>
           <Reveal delay={0.1}>
             <p className="max-w-[380px] font-sans text-[15px] leading-[26px] text-secondary">
-              Dr. Goel brings lived expertise from four industries to every stage — not theory, but decades of real decisions.
+              Every topic below is a job he has held, not a subject he has read about.
             </p>
           </Reveal>
         </div>

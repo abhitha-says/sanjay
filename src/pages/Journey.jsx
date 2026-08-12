@@ -85,7 +85,7 @@ const milestones = [
     org: 'Hamilton Packers',
     location: 'Mumbai, Maharashtra',
     description: 'Specialised in the relocation of personal effects, corporate shifting, and the handling of antiques and high-value paintings.',
-    focus: 'Handling what mattered most to others, with the greatest care.',
+    focus: 'Trusted with what other people could not replace.',
   },
   {
     id: 'sikkim-manipal',
@@ -99,7 +99,7 @@ const milestones = [
   },
   {
     id: 'pet-travel',
-    period: '2012 – Present',
+    period: '2012 – 2025',
     title: 'Director',
     org: 'Pet Travel Private Limited',
     location: 'Mumbai, Maharashtra',
@@ -113,7 +113,7 @@ const milestones = [
     org: 'GTC Enterprises',
     location: 'Mumbai Metropolitan Region',
     description: 'Development of low-cost housing.',
-    focus: "Housing that's within reach, without compromise on quality.",
+    focus: 'Low-cost is a specification, not an excuse.',
     image: mhadaCeo,
     imageCaption: 'With MHADA CEO, Shri Sanjiv Jaiswal, IAS',
   },
@@ -129,12 +129,12 @@ const milestones = [
   },
   {
     id: 'bargain-india',
-    period: '2015 – Present',
+    period: '2015 – 2025',
     title: 'Managing Director',
     org: 'Bargain India Private Limited',
     location: 'Navi Mumbai, Maharashtra',
     description: 'Home loans, mortgage and commercial loans, and real estate through print and digital marketing — built around customer empowerment.',
-    focus: 'Customer empowerment, one hassle-free transaction at a time.',
+    focus: 'The paperwork, made survivable.',
   },
   {
     id: 'aryavarta',
@@ -152,7 +152,7 @@ const milestones = [
     org: 'Seavista Infrastructure LLP',
     location: 'Navi Mumbai, Maharashtra',
     description: 'Developing a residential-cum-commercial tower at a prime location in Nerul.',
-    focus: 'Building homes and community, one prime location at a time.',
+    focus: 'One tower in Nerul, residential and commercial both.',
   },
   {
     id: 'agrawal-business-network',
@@ -160,7 +160,7 @@ const milestones = [
     title: 'Chief Executive Officer',
     org: 'Agrawal Business Network LLP',
     location: 'Mumbai, Maharashtra',
-    description: 'Also serving as a Resource Person for the National Commission for Women, India.',
+    description: 'A network for member enterprises to trade with each other.',
     focus: 'Still building, still learning — four decades on.',
   },
 ]
@@ -583,7 +583,8 @@ function FinalSection() {
         transition={{ duration: 0.9, delay: 0.12, ease }}
         className="mt-5 max-w-[46ch] font-sans text-[16px] leading-[27px] text-secondary"
       >
-        Experience becomes meaningful when it continues to create value.
+        The last entry above is dated 2025 — a new network, a new title, forty
+        years after the first one.
       </motion.p>
     </section>
   )

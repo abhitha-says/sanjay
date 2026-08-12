@@ -6,7 +6,6 @@ import leadershipHero from '../assets/leadership-hero.png'
 import cscmpNewsletter from '../assets/gallery/cscmp-newsletter-launch-2011.jpg'
 import felicitatedMinisterKhot from '../assets/gallery/felicitated-minister-khot.jpg'
 import moderatorCscmpEvent from '../assets/gallery/moderator-cscmp-event.jpg'
-import speakingConference from '../assets/gallery/speaking-conference-2012.jpg'
 import mhadaCeo from '../assets/gallery/mhada-ceo-sanjiv-jaiswal.jpg'
 import withSanjivSanyal from '../assets/gallery/with-sanjiv-sanyal.jpg'
 import stXaviers from '../assets/gallery/st-xaviers-150-years.jpg'
@@ -69,7 +68,7 @@ const groupLeadership = [
     title: 'Chief Executive Officer',
     org: 'Agrawal Business Network LLP',
     period: '2025 – Present',
-    description: 'Leading a dynamic business network with a vision for collaborative growth.',
+    description: 'A network for member enterprises to trade with each other. Started 2025.',
     color: '#5a2d7a',
     image: withSanjivSanyal,
     imageCaption: 'With Shri Sanjiv Sanyal, Economic Adviser to the Prime Minister of India',
@@ -85,17 +84,39 @@ const chambers = [
     category: 'Commerce',
   },
   {
-    title: 'Co-Chairman, Supply Chain & Logistics Committee',
-    org: 'Maharashtra Chamber of Commerce, Industry & Agriculture',
-    period: '2015 – 2020',
+    title: 'Vice President — Maharashtra',
+    org: 'Akhil Bhartiya Agrawal Sammelan',
+    period: 'Present',
+    category: 'Community',
+  },
+  {
+    title: 'Past President',
+    org: 'Agarwal Samaj, Kharghar, Navi Mumbai',
+    period: 'Former',
+    category: 'Community',
+  },
+  {
+    // 'Former' rather than a year range — the exact tenure isn't confirmed.
+    title: 'Governing Council Member',
+    org: 'Maharashtra Chamber of Commerce, Industry and Agriculture',
+    period: 'Former',
     category: 'Industry',
     image: felicitatedMinisterKhot,
     caption: 'Felicitated by Shri Sada Bhau Khot, Hon. Minister, Govt of Maharashtra',
     imagePosition: '50% 30%',
   },
   {
-    title: 'Country Representative – India',
-    org: 'Supply Chain Asia',
+    title: 'Vice President — India',
+    org: 'Council of Supply Chain Management Professionals, USA',
+    period: 'Former',
+    category: 'Supply Chain',
+    image: cscmpNewsletter,
+    caption: 'Launch of the CSCMP (USA) Newsletter in India, 2011',
+    imagePosition: '50% 40%',
+  },
+  {
+    title: 'India Partner',
+    org: 'Supply Chain Asia, Singapore',
     period: '2006 – 2025',
     category: 'Global',
   },
@@ -104,24 +125,6 @@ const chambers = [
     org: 'International Pet Animal Transport Association',
     period: '2013 – 2025',
     category: 'International',
-  },
-  {
-    title: 'Hon. Secretary, Mumbai Round Table',
-    org: 'Council of Supply Chain Management Professionals',
-    period: '2012 – 2014',
-    category: 'Supply Chain',
-    image: cscmpNewsletter,
-    caption: 'Launch of the CSCMP (USA) Newsletter in India, 2011',
-    imagePosition: '50% 40%',
-  },
-  {
-    title: 'Vice President, Programs',
-    org: 'CSCMP Mumbai Round Table',
-    period: '2014 – 2015',
-    category: 'Supply Chain',
-    image: speakingConference,
-    caption: 'Speaking at an international supply chain conference — 2012',
-    imagePosition: '50% 18%',
   },
   {
     title: 'Secretary, West Zone',
@@ -409,7 +412,7 @@ function LeadershipHero() {
           transition={{ duration: 1.4, delay: 1.1, ease }}
           className="mt-4 max-w-[420px] font-sans text-[14.5px] leading-[23px] text-secondary sm:text-[15px] sm:leading-[25px] md:max-w-[440px] md:text-[17px] md:leading-[28px] md:tracking-[-0.026em]"
         >
-          Governance and stewardship across a diversified group, industry chambers, and the boards of a dozen companies.
+          Chairman of one group, vice chairman of a chamber, and a seat on the boards of a dozen companies.
         </motion.p>
 
         {/* Stat pills */}
@@ -790,7 +793,7 @@ function AwardBanner() {
               Super Achiever Award
             </h3>
             <p className="mt-4 max-w-[520px] font-sans text-[15px] leading-[27px] tracking-[-0.016em] text-white/60">
-              Issued by the Oriental College of Management in recognition of achievements and progressive work with GTC Group — acknowledging four decades of leadership, vision, and consistent contribution to business and society.
+              Issued by the Oriental College of Management for progressive work with GTC Group.
             </p>
           </div>
           <div className="shrink-0 lg:w-[180px] lg:border-l lg:border-white/10 lg:pl-10">
@@ -861,7 +864,7 @@ export default function Leadership() {
         <SectionLabel
           eyebrow="Group"
           title="Enterprise Leadership"
-          description="Four leadership roles that together form the backbone of the GTC Group — steering vision, operations, real estate, and network strategy."
+          description="Four roles inside the group: the operating company since 1997, the chairmanship since 2006, the housing arm since 2012, and a business network started in 2025."
         />
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {groupLeadership.map((role, i) => (
@@ -875,7 +878,7 @@ export default function Leadership() {
         <SectionLabel
           eyebrow="Industry"
           title="Chambers & Bodies"
-          description="Active governance across national and international industry bodies — advocating, building, and representing."
+          description="Eight posts, from Kharghar to Calcutta to Singapore — and a stint reviewing Bangladesh for the international pet transport association."
         />
 
         {/* BIG spotlight photos first */}
@@ -896,7 +899,7 @@ export default function Leadership() {
         <SectionLabel
           eyebrow="Governance"
           title="Board Directorships"
-          description="Serving as director and independent director across a broad portfolio of companies — from logistics to fintech to infrastructure."
+          description="Eight directorships since 2006 — cargo, insurance broking, movers, infrastructure, and one payments company."
         />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {boards.map((board, i) => (
@@ -912,7 +915,7 @@ export default function Leadership() {
             <SectionLabel
               eyebrow="Since 1988"
               title="Professional Memberships"
-              description="Long-standing affiliations with the chambers, councils and associations that shape Indian commerce and industry."
+              description="Seven bodies, the earliest joined in 1988 — from the Bombay Goods Transport Association to Lions Clubs International."
             />
           </div>
           <div className="flex flex-wrap gap-3 content-start pt-1">

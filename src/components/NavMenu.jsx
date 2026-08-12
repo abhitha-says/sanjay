@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: 'Experience',    to: '/leadership',    num: '04' },
   { label: 'Initiatives',   to: '/initiatives',   num: '05' },
   { label: 'Media',         to: '/media',         num: '06' },
+  { label: 'Contact',       to: '/contact',       num: '07' },
 ]
 
 export default function NavMenu() {

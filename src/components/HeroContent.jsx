@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import SocialDock from './SocialDock'
 
 const ease = [0.22, 1, 0.36, 1]
 
@@ -54,9 +55,20 @@ export default function HeroContent() {
         transition={{ duration: 1.4, delay: 1.2, ease }}
         className="mt-3 max-w-[480px] font-sans text-[15px] leading-[24px] text-secondary sm:text-[16px] sm:leading-[27px] md:text-[18px] md:leading-[30px]"
       >
-        A visionary leader with a deep commitment to heritage, education, and
-        ethical leadership. Driving impact through values and vision.
+        Four decades, thirteen roles, six languages. From fertiliser bags in
+        Allahabad to low-cost housing across Mumbai — and a foundation for the
+        monuments and arts of Ancient India.
       </motion.p>
+
+      {/* Social dock — last beat of the hero stagger, after the paragraph. */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, delay: 1.32, ease }}
+        className="mt-6"
+      >
+        <SocialDock />
+      </motion.div>
     </div>
   )
 }

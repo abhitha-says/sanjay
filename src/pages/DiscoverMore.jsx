@@ -61,7 +61,7 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     author: 'Dr. Sanjay Goel',
     year: '1997',
     tag: 'Enterprise',
-    desc: 'From a single logistics operation to a diversified group spanning cargo, real estate, and a dynamic business network — the GTC story is one of quiet, consistent ambition.',
+    desc: 'One logistics operation in 1997. By 2006, a group with cargo, real estate and a business network under it.',
     to: '/leadership',
     cta: 'View Leadership',
     images: { front: imgs.felicitated, back: imgs.moderator },
@@ -76,13 +76,13 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     author: 'Dr. Sanjay Goel',
     year: '2006',
     tag: 'Industry',
-    desc: 'As Country Representative for Supply Chain Asia and a leader at CSCMP, Dr. Goel helped shape the discourse on logistics and supply chain management in India.',
+    desc: 'As India Partner for Supply Chain Asia and Vice President — India at CSCMP (USA), Dr. Goel helped shape the discourse on logistics and supply chain management in India.',
     to: '/leadership',
     cta: 'Read about Leadership',
     images: { front: imgs.speaking, back: imgs.cscmpNews },
     pages: [
-      { period: '2006 – 2025', title: 'Supply Chain Asia', body: 'Serving as Country Representative for India, Dr. Goel connected Indian supply chain professionals with global best practices and international networks.', image: imgs.speaking },
-      { period: '2011 – 2015', title: 'CSCMP Leadership', body: 'From launching the CSCMP Newsletter in India to moderating international events, his leadership shaped the supply chain community in Mumbai and beyond.', image: imgs.cscmpNews },
+      { period: '2006 – 2025', title: 'Supply Chain Asia', body: 'As India Partner for the Singapore-based network, Dr. Goel connected Indian supply chain professionals with global best practices and international networks.', image: imgs.speaking },
+      { period: 'Former', title: 'CSCMP Leadership', body: 'As Vice President — India for the Council of Supply Chain Management Professionals (USA), he launched the CSCMP Newsletter in India and moderated international events.', image: imgs.cscmpNews },
     ],
   },
   {
@@ -91,7 +91,7 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     author: 'Dr. Sanjay Goel',
     year: '2010',
     tag: 'Community',
-    desc: 'Across decades, the connections forged — with ministers, academics, artists, and activists — reflect a life lived at the intersection of business and society.',
+    desc: 'Ministers, economists, a playback singer, a comedian. Four decades of rooms, and who was in them.',
     to: '/leadership',
     cta: 'See the Full Story',
     images: { front: imgs.sanjivSanyal, back: imgs.sudhir },
@@ -106,7 +106,7 @@ const ARCHIVE_BOOKS_GETTER = (imgs) => [
     author: 'Dr. Sanjay Goel',
     year: '2020',
     tag: 'Legacy',
-    desc: 'Heritage preservation, clean water access, education, and housing for the underserved — these are not footnotes but chapters of equal weight in the story of Dr. Sanjay Goel.',
+    desc: 'Heritage, water, housing, relief. The work that never appeared on an invoice.',
     to: '/initiatives',
     cta: 'Explore Initiatives',
     images: { front: imgs.portrait2, back: imgs.mhada },
@@ -166,11 +166,11 @@ const CATEGORIES = ['All', 'People', 'Events', 'Work']
 
 // ─── CONTRIBUTION PILLARS ─────────────────────────────────────────────────────
 const PILLARS = [
-  { label: 'Heritage',           desc: 'Founded the Aryavarta Heritage Foundation to preserve India\'s intangible cultural memory.' },
-  { label: 'Education',          desc: 'Decades of academic board memberships and institutional leadership at ITM College and beyond.' },
-  { label: 'Humanitarian Work',  desc: 'Water treatment, clean water access, and community-level change in underserved regions.' },
-  { label: 'Community',          desc: 'Constant participation in chambers, associations, and civic networks across India and the USA.' },
-  { label: 'Sustainability',     desc: 'Championing responsible business that balances growth with environmental and social stewardship.' },
+  { label: 'Heritage',   desc: 'Aryavarta Heritage Foundation, registered in 2020 to preserve the monuments, arts and social practices of Ancient India.' },
+  { label: 'Education',  desc: "Secretary for the West Zone of the St. Xavier's College Calcutta Alumni Association since 2006." },
+  { label: 'Water',      desc: 'Chemical-free drinking and waste-water treatment through Greenzytech Solutions. Before that, fundraising for the Prime Minister’s Relief Fund in 1987.' },
+  { label: 'Community',  desc: 'Eight posts across trade chambers and community associations — Kharghar to Calcutta to Singapore.' },
+  { label: 'Housing',    desc: 'Low-cost housing for the Mumbai Metropolitan Region, through GTC Enterprises since 2012.' },
 ]
 
 // ─── Trail images for hero ────────────────────────────────────────────────────
@@ -394,19 +394,20 @@ function ManBehindWork() {
 
             <FadeUp delay={0.18} className="mt-7 max-w-[460px] space-y-4">
               <p className="font-sans text-[15px] leading-[27px] text-secondary">
-                Born in Rajasthan, schooled in Bengal, and shaped by four decades
-                of commerce, community and culture — Dr. Sanjay Goel's story is
-                not simply a professional one.
+                Born in Rajasthan, raised across Haryana and Uttar Pradesh,
+                schooled in West Bengal — four states before the first job, and
+                six languages by the end of it.
               </p>
               <p className="font-sans text-[15px] leading-[27px] text-secondary">
-                It is a story of curiosity. Of building things — businesses,
-                institutions, relationships — with the quiet conviction that
-                people matter more than balance sheets.
+                The work that followed resists a tidy summary. Fertiliser bags
+                for an IFFCO ancillary unit. Antiques and high-value paintings,
+                packed and moved. Pets, flown and shipped across the world.
+                Low-cost housing for the Mumbai Metropolitan Region.
               </p>
               <p className="font-sans text-[15px] leading-[27px] text-secondary">
-                He speaks five languages. He preserves heritage. He finds meaning
-                in service. And he believes, firmly, that true leadership is
-                measured by what it leaves behind.
+                In 2014 he went back for a doctorate in alternative medicine — on
+                the view that centuries-old therapies sometimes work, at little or
+                no cost, where the popular ones fail.
               </p>
             </FadeUp>
 
@@ -461,8 +462,7 @@ function IdeasPerspectives() {
           className="font-serif text-[clamp(36px,5.5vw,80px)] font-black leading-[0.93] tracking-[-2.5px] text-ink"
         />
         <FadeUp delay={0.2} className="mt-4 max-w-[480px] font-sans text-[15px] leading-[26px] text-secondary">
-          The subjects that shape his conversations, speeches, and the decisions
-          that define his work.
+          What he talks about when someone hands him a microphone.
         </FadeUp>
       </div>
 
@@ -752,8 +752,8 @@ function ClosingCTA() {
 
         <FadeUp delay={0.24} className="mt-7 max-w-[480px]">
           <p className="font-sans text-[15px] leading-[27px] text-secondary">
-            Explore the experiences, ideas and moments that continue to shape
-            the work — and the life behind it.
+            Five chapters, from a Rajasthan childhood to a heritage foundation
+            registered in 2020. Open any one of them.
           </p>
         </FadeUp>
 
@@ -1042,8 +1042,8 @@ export default function DiscoverMore() {
             transition={{ duration: 0.9, delay: 0.82, ease }}
             className="mt-7 max-w-[520px] font-sans text-[14px] leading-[24px] sm:text-[17px] sm:leading-[30px] text-secondary"
           >
-            Explore the work, people, ideas and institutions that have shaped
-            Dr. Sanjay Goel's journey.
+            The work, the people, and the parts of a forty-year career that
+            don't fit on a résumé.
           </motion.p>
 
           <motion.div

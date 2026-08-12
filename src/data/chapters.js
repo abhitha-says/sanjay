@@ -87,11 +87,6 @@ export const chapters = [
         body: 'Chemical-free drinking and waste water treatment via Greenzytech Solutions LLP.',
       },
       {
-        period: '2025 – Present',
-        title: 'National Commission for Women, India',
-        body: 'Resource Person, contributing to the Commission’s work for women across India.',
-      },
-      {
         period: '1987',
         title: 'PM Relief Fund',
         body: 'Volunteered as a fund raiser for disaster and humanitarian relief.',
@@ -118,15 +113,15 @@ export const chapters = [
         body: 'Group vision and direction, with an eye on growth, employee welfare and social acceptance.',
       },
       {
-        period: '2015 – 2020',
+        period: 'Former',
         title: 'Maharashtra Chamber of Commerce',
-        body: 'Co-Chairman, Supply Chain & Logistics Committee.',
+        body: 'Governing Council Member, Maharashtra Chamber of Commerce, Industry and Agriculture.',
         image: felicitatedMinisterKhot,
       },
       {
-        period: '2012 – 2014',
-        title: 'CSCMP Mumbai Round Table',
-        body: 'Hon. Secretary, Council of Supply Chain Management Professionals.',
+        period: 'Former',
+        title: 'CSCMP, USA',
+        body: 'Vice President — India, Council of Supply Chain Management Professionals.',
         image: cscmpNewsletter,
       },
       {

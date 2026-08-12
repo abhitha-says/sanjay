@@ -122,3 +122,39 @@ export function Award(props) {
     </Icon>
   )
 }
+
+export function Mail(props) {
+  return (
+    <Icon {...props}>
+      <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+      <path d="m3 7 9 6 9-6" />
+    </Icon>
+  )
+}
+
+export function User(props) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+    </Icon>
+  )
+}
+
+export function Pencil(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3Z" />
+      <path d="m15 6 3 3" />
+    </Icon>
+  )
+}
+
+export function Lock(props) {
+  return (
+    <Icon {...props}>
+      <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5" />
+      <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+    </Icon>
+  )
+}
