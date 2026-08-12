@@ -60,13 +60,39 @@ export default function Dock() {
   // chapter's chip to the center of the scroll strip rather than leaving it
   // wherever it happens to sit. On desktop all four chips already fit without
   // scrolling, so this is a no-op there.
+  //
+  // Deliberately NOT scrollIntoView(): that scrolls every scrollable ancestor,
+  // the document included. The dock is in normal flow at the very bottom of
+  // the page, so scrolling it into view dragged the whole window to the page
+  // bottom on every route change — the "new page opens scrolled to the
+  // bottom" bug, most visible on mobile where the strip actually overflows.
+  // Driving scrollLeft on the strip itself can only ever move the strip.
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
+    const maxLeft = el.scrollWidth - el.clientWidth
+    if (maxLeft <= 1) return // no horizontal overflow (desktop) — nothing to do
     const activeEl = el.querySelector('[data-active="true"]')
     if (!activeEl) return
-    activeEl.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', inline: 'center', block: 'nearest' })
-  }, [pathname, reducedMotion])
+
+    // Offset of the chip's center from the strip's center, in strip
+    // coordinates. Measured from live rects so it stays correct regardless of
+    // which ancestor happens to be the chips' offsetParent.
+    const stripRect = el.getBoundingClientRect()
+    const chipRect = activeEl.getBoundingClientRect()
+    const delta =
+      chipRect.left - stripRect.left - (stripRect.width - chipRect.width) / 2
+
+    // Instant, never 'smooth': the strip is scroll-snap-mandatory, and
+    // browsers cancel a programmatic smooth scroll on such a container and
+    // revert it to the previous snap point — so a smooth scroll here simply
+    // never arrives. It costs nothing visually either, since this always runs
+    // while the page-transition curtain covers the screen.
+    el.scrollTo({
+      left: Math.min(Math.max(el.scrollLeft + delta, 0), maxLeft),
+      behavior: 'auto',
+    })
+  }, [pathname])
 
   return (
     <motion.div

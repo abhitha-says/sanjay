@@ -1,0 +1,27 @@
+# SPA fallback for Apache / cPanel-style shared hosting.
+#
+# See public/_redirects for the full explanation — same fix, different host
+# dialect. Both ship in dist/ because which one takes effect depends entirely
+# on what the host reads; the other is inert, not harmful.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Anything that IS a real file or directory (index.html, /assets/*.js,
+  # images, fonts) is served as-is. Without this guard the rule below would
+  # swallow every asset request and hand back HTML instead of JavaScript.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Everything left over is a client-side route: return index.html and let
+  # React Router resolve the path in the browser.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Last-resort layer, for hosts where mod_rewrite is unavailable so the rules
+# above never run. This still renders the correct page, just with a 404 status
+# code rather than 200 — worse for search engines, but the visitor sees the
+# site instead of an error page.
+ErrorDocument 404 /index.html

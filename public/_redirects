@@ -1,0 +1,12 @@
+# SPA fallback (Netlify-style syntax, honored by a number of static hosts).
+#
+# The build produces exactly one HTML file. Routes like /journey or /leadership
+# exist only inside React Router, in the browser — there is no file on disk at
+# those paths. Without this rule, refreshing on a sub-route (or opening a shared
+# link to one) makes the browser request a path the host can't find: a 404.
+#
+# "Serve index.html for anything you don't have a real file for, with a 200 so
+# it isn't treated as an error page." React Router then resolves the URL client
+# side. Real assets under /assets/* still win, since the host matches actual
+# files before applying this.
+/*    /index.html   200
