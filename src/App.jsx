@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Dock from './components/Dock'
 import PageTransition from './components/PageTransition'
+import ScrollToTop from './components/ScrollToTop'
 import { TransitionProvider } from './context/TransitionContext'
 import Home from './pages/Home'
 import DiscoverMore from './pages/DiscoverMore'
@@ -42,6 +43,7 @@ export default function App() {
 
         {/* Global cinematic transition overlay — renders once, above everything */}
         <PageTransition />
+        <ScrollToTop />
 
         <Navbar />
         <Routes>

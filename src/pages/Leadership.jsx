@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
 import { motion, useMotionValue, useSpring, useTransform, useScroll, AnimatePresence, MotionConfig } from 'framer-motion'
 import leadershipHero from '../assets/leadership-hero.png'
@@ -843,6 +844,12 @@ function BackHomeBtn() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function Leadership() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [pathname])
+
   return (
     <MotionConfig reducedMotion="user">
     <main className="relative z-20 -mt-[72px]">

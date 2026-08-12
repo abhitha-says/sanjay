@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import portrait2 from '../assets/portrait-2.png'
@@ -591,6 +592,12 @@ function FinalSection() {
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function Journey() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [pathname])
+
   return (
     <main className="relative z-20">
       <JourneyHero />

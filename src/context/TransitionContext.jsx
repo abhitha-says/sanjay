@@ -23,6 +23,7 @@ export function TransitionProvider({ children }) {
   // The overlay component registers its animate function here
   const animateRef = useRef(null)
   const currentPathRef = useRef(window.location.pathname)
+  const stuckTimerRef = useRef(null)
 
   const registerAnimator = useCallback((fn) => {
     animateRef.current = fn
@@ -47,22 +48,46 @@ export function TransitionProvider({ children }) {
       setDirection(dir)
       setIsTransitioning(true)
 
+      // Safety net: if anything downstream throws (curtain never calls
+      // onComplete), don't let navigation stay permanently locked out —
+      // isTransitioning would otherwise never clear and every future click
+      // would silently no-op forever.
+      clearTimeout(stuckTimerRef.current)
+      stuckTimerRef.current = setTimeout(() => setIsTransitioning(false), 3000)
+
       if (animateRef.current) {
         animateRef.current({
           direction: dir,
+          // Called by the curtain only once it has FULLY covered the
+          // screen (see PageTransition's transitionend-driven wait — not
+          // a fixed sleep). Scroll is reset both before and after the
+          // route swap, and the curtain waits a further frame before
+          // revealing anything (see PageTransition), so the destination
+          // page is guaranteed to be mounted at scrollY 0 before it is
+          // ever shown — not merely "eventually" at scrollY 0.
           onRouteChange: () => {
-            window.scrollTo({ top: 0, behavior: 'instant' })
+            // Reset BEFORE the destination route mounts, so any layout
+            // effect that reads scroll position on mount (e.g. Framer
+            // Motion's useScroll) observes 0, never the old page's offset.
+            window.scrollTo(0, 0)
             currentPathRef.current = nextPath
             navigate(nextPath)
+            // Re-assert immediately after: navigate() only *schedules* the
+            // React update, it doesn't block until it's committed, so this
+            // also covers the instant right after the call returns.
+            window.scrollTo(0, 0)
           },
           onComplete: () => {
+            clearTimeout(stuckTimerRef.current)
             setIsTransitioning(false)
           },
         })
       } else {
-        window.scrollTo({ top: 0, behavior: 'instant' })
+        window.scrollTo(0, 0)
         currentPathRef.current = nextPath
         navigate(nextPath)
+        window.scrollTo(0, 0)
+        clearTimeout(stuckTimerRef.current)
         setIsTransitioning(false)
       }
     },

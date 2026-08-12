@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Reveal from '../components/Reveal'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
@@ -154,6 +155,11 @@ export default function Initiatives() {
   const activeService = publicService.find((i) => i.word === activeWord)
 
   const go = useTransitionNavigate()
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [pathname])
 
   return (
     <main className="relative z-20">

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { useLocation } from 'react-router-dom'
 import { useTransitionNavigate } from '../hooks/useTransitionNavigate'
 import {
   motion,
@@ -985,6 +986,11 @@ function TransitionNavLink({ link, index }) {
 // ════════════════════════════════════════════════════════════════════════
 export default function DiscoverMore() {
   const heroRef = useRef(null)
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [pathname])
 
   return (
     <main className="relative z-20">

@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import MediaHero from '../components/MediaHero'
 import Reveal from '../components/Reveal'
@@ -153,6 +154,12 @@ function AwardCard() {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function Media() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [pathname])
+
   return (
     <main className="relative z-20 -mt-[72px]">
       <MediaHero
